@@ -1,4 +1,19 @@
 [X] Hello world for models
+
+[ ] RAW vs Structured Artefacts and not simply "models" vs "files"
+    Posting types:
+
+
+    MQTT+FTP:
+    - BBB/AAA/artefacts/file/FFF
+    - BBB/AAA/artefacts/json/FFF/VVV/{s,u,c}
+
+    - BBB/AAA/observations/file/FFF
+    - BBB/AAA/observations/json/FFF/VVV/{s,u,c}
+
+    MQTT:
+    - BBB/AAA/observations/basic/FFF/VVV/{s,u,c}
+
 [ ] CDM should have its own ID generator. Separation of concerns!
 [ ] Keep alive at MQTT level. Laptop seems to drop the connection. 
     => https://stackoverflow.com/questions/43759445/how-i-can-check-if-i-lose-connection-with-mqtt-broker 
