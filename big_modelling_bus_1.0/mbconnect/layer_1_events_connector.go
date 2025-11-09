@@ -2,7 +2,7 @@
  *
  * Package: mbconnect
  * Layer:   1
- * Module:  events_connectors
+ * Module:  events_connector
  *
  * ..... ... .. .
  *
@@ -29,11 +29,9 @@ type (
 		agentID,
 		mqttUser,
 		mqttPort,
-		mqttAgentRoot,
-		mqttGenericRoot,
+		mqttRoot,
 		mqttBroker,
-		mqttPassword,
-		mqttPathPrefix string
+		mqttPassword string
 		mqttMaxMessageSize int
 
 		mqttClient mqtt.Client
@@ -42,7 +40,7 @@ type (
 	}
 )
 
-func (e *tModellingBusEventsConnector) connLostHandler(c mqtt.Client, err error) {
+func (e *tModellingBusEventsConnector) connectionLostHandler(c mqtt.Client, err error) {
 	panic(fmt.Sprintf("PANIC; MQTT connection lost, reason: %v\n", err))
 }
 
@@ -52,7 +50,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 	opts.SetClientID("mqtt-client-" + e.agentID)
 	opts.SetUsername(e.mqttUser)
 	opts.SetPassword(e.mqttPassword)
-	opts.SetConnectionLostHandler(e.connLostHandler)
+	opts.SetConnectionLostHandler(e.connectionLostHandler)
 
 	for connected := false; !connected; {
 		// Two log channels needed. One for errors, and one for normal progress.
@@ -75,28 +73,23 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 	fmt.Println("Connected to the MQTT broker")
 }
 
-func (e *tModellingBusEventsConnector) listenForEvents(AgentID, topicPath string, postingHandler func([]byte)) {
-	mqttTopicPath := e.mqttGenericRoot + "/" + AgentID + "/" + topicPath
+func (e *tModellingBusEventsConnector) listenForEvents(AgentID, topicPath string, eventHandler func([]byte)) {
+	mqttTopicPath := e.mqttRoot + "/" + AgentID + "/" + topicPath
 	token := e.mqttClient.Subscribe(mqttTopicPath, 1, func(client mqtt.Client, msg mqtt.Message) {
-		postingHandler(msg.Payload())
+		eventHandler(msg.Payload())
 	})
 	token.Wait()
 }
 
-///// THIS AGENT
-
 func (e *tModellingBusEventsConnector) postEvent(topicPath string, message []byte) {
-	mqttTopicPath := e.mqttAgentRoot + "/" + topicPath
+	mqttTopicPath := e.mqttRoot + "/" + e.agentID + "/" + topicPath
 	token := e.mqttClient.Publish(mqttTopicPath, 0, true, string(message))
 	token.Wait()
 }
 
-// // NAME?
 func (e *tModellingBusEventsConnector) eventPayloadAllowed(payload []byte) bool {
 	return len(payload) <= e.mqttMaxMessageSize
 }
-
-//// Size checker!!
 
 func createModellingBusEventsConnector(topicBase, agentID string, configData *TConfigData, errorReporter TErrorReporter) *tModellingBusEventsConnector {
 	e := tModellingBusEventsConnector{}
@@ -104,19 +97,14 @@ func createModellingBusEventsConnector(topicBase, agentID string, configData *TC
 	e.errorReporter = errorReporter
 
 	// Get data from the config file
+	e.agentID = agentID
 	e.mqttPort = configData.GetValue("mqtt", "port").String()
 	e.mqttUser = configData.GetValue("mqtt", "user").String()
 	e.mqttBroker = configData.GetValue("mqtt", "broker").String()
 	e.mqttPassword = configData.GetValue("mqtt", "password").String()
-
-	// Needed???
-	e.mqttPathPrefix = configData.GetValue("mqtt", "prefix").String()
-
+	e.mqttRoot = configData.GetValue("mqtt", "prefix").String() + "/" + topicBase
 	e.mqttMaxMessageSize = configData.GetValue("mqtt", "max_message_size").IntWithDefault(mqttMaxMessageSizeDefault)
 
-	// NEEded?
-	e.mqttGenericRoot = e.mqttPathPrefix + "/" + topicBase
-	e.mqttAgentRoot = e.mqttPathPrefix + "/" + topicBase + "/" + agentID
 	e.connectToMQTT()
 
 	return &e

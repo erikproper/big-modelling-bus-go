@@ -21,12 +21,6 @@ import (
 	"time"
 )
 
-// ///// GENERIC
-const (
-	modellingBusVersion = "bus-version-1.0"
-	jsonFileExtension   = ".json"
-)
-
 type (
 	TModellingBusConnector struct {
 		configData *TConfigData

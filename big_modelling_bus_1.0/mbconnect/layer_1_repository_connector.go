@@ -28,7 +28,6 @@ type (
 		ftpAgentRoot,
 		ftpServer,
 		ftpPassword,
-		ftpPathPrefix,
 		ftpLocalWorkDirectory string
 
 		createdPaths map[string]bool
@@ -179,11 +178,7 @@ func createModellingBusRepositoryConnector(topicBase, agentID string, configData
 	r.ftpUser = configData.GetValue("ftp", "user").String()
 	r.ftpServer = configData.GetValue("ftp", "server").String()
 	r.ftpPassword = configData.GetValue("ftp", "password").String()
-
-	// Needed???
-	r.ftpPathPrefix = configData.GetValue("ftp", "prefix").String()
-
-	r.ftpAgentRoot = r.ftpPathPrefix + "/" + topicBase + "/" + agentID
+	r.ftpAgentRoot = configData.GetValue("ftp", "prefix").String() + "/" + topicBase + "/" + agentID
 
 	r.createdPaths = map[string]bool{}
 
