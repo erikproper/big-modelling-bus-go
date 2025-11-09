@@ -153,7 +153,7 @@ func (r *tModellingBusRepositoryConnector) getFileFromRepository(server, port, r
 		return
 	}
 
-	// Download an File to disk
+	// Download a File to local storage
 	// ====> CHECK need for OS (Dos, Linux, ...) independent "/"
 	File, err := os.Create(localFileName)
 	if err != nil {
