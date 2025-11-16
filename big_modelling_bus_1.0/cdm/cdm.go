@@ -37,8 +37,6 @@ type (
 		// For types
 		TypeName map[string]string `json:"type names"`
 
-		LastNewID string `json:"-"`
-
 		// For concrete individual types
 		ConcreteIndividualTypes map[string]bool `json:"concrete individual types"`
 
@@ -62,7 +60,6 @@ type (
 
 func (m *TCDMModel) Clean() {
 	m.ModelName = ""
-	m.LastNewID = ""
 	m.ConcreteIndividualTypes = map[string]bool{}
 	m.QualityTypes = map[string]bool{}
 	m.RelationTypes = map[string]bool{}
@@ -79,8 +76,7 @@ func (m *TCDMModel) Clean() {
 }
 
 func (m *TCDMModel) NewElementID() string {
-	// Check should be at the busconnector level ...
-	return m.ModellingBusArtefactPoster.ModellingBusConnector.GetNewID()
+	return mbconnect.GetTimestamp()
 }
 
 func (m *TCDMModel) SetModelName(name string) {
@@ -170,10 +166,11 @@ func CreateCDMModel() TCDMModel {
 
 /*
  *
- * Posting the model to the bus
+ * Posting models to the bus
  *
  */
 
+// Note: One ModellingBusConnector can be used for different models of different kinds.
 func CreateCDMPoster(ModellingBusConnector mbconnect.TModellingBusConnector, modelID string) TCDMModel {
 	CDMPosterModel := CreateCDMModel()
 
@@ -201,6 +198,7 @@ func (m *TCDMModel) PostConsidering() {
  *
  */
 
+// Note: One ModellingBusConnector can be used for different models of different kinds.
 func CreateCDMListener(ModellingBusConnector mbconnect.TModellingBusConnector) mbconnect.TModellingBusArtefactConnector {
 	ModellingBusCDMModelListener := mbconnect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 

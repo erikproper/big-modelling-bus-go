@@ -16,7 +16,6 @@ package mbconnect
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 )
 
@@ -133,14 +132,6 @@ func (b *TModellingBusConnector) listenForJSONPostings(agentID, topicPath string
  * Externally visible functionality
  *
  */
-
-/*
- * Unique IDs
- */
-
-func (b *TModellingBusConnector) GetNewID() string {
-	return fmt.Sprintf("%s-%s", b.agentID, GetTimestamp())
-}
 
 /*
  * Creation

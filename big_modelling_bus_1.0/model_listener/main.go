@@ -300,27 +300,27 @@ func CreateCDMLaTeXWriter(config string, reporter *mbconnect.TReporter) TCDMMode
 	return CDMModelLaTeXWriter
 }
 
-func (l *TCDMModelLaTeXWriter) ListenForModelPostings(ModellingBusModelListener mbconnect.TModellingBusArtefactConnector, agentId, modelID string) {
-	ModellingBusModelListener.ListenForStatePostings(agentId, modelID, func() {
+func (l *TCDMModelLaTeXWriter) ListenForModelPostings(CDMModellingBusListener mbconnect.TModellingBusArtefactConnector, agentId, modelID string) {
+	CDMModellingBusListener.ListenForStatePostings(agentId, modelID, func() {
 		l.reporter.Progress("Received state.")
-		l.CurrentModel.GetStateFromBus(ModellingBusModelListener)
-		l.UpdatedModel.GetUpdatedFromBus(ModellingBusModelListener)
-		l.ConsideredModel.GetConsideredFromBus(ModellingBusModelListener)
+		l.CurrentModel.GetStateFromBus(CDMModellingBusListener)
+		l.UpdatedModel.GetUpdatedFromBus(CDMModellingBusListener)
+		l.ConsideredModel.GetConsideredFromBus(CDMModellingBusListener)
 		l.WriteModelToLaTeX()
 		l.CreatePDF()
 	})
 
-	ModellingBusModelListener.ListenForUpdatePostings(agentId, modelID, func() {
+	CDMModellingBusListener.ListenForUpdatePostings(agentId, modelID, func() {
 		l.reporter.Progress("Received update.")
-		l.UpdatedModel.GetUpdatedFromBus(ModellingBusModelListener)
-		l.ConsideredModel.GetConsideredFromBus(ModellingBusModelListener)
+		l.UpdatedModel.GetUpdatedFromBus(CDMModellingBusListener)
+		l.ConsideredModel.GetConsideredFromBus(CDMModellingBusListener)
 		l.WriteModelToLaTeX()
 		l.CreatePDF()
 	})
 
-	ModellingBusModelListener.ListenForConsideringPostings(agentId, modelID, func() {
+	CDMModellingBusListener.ListenForConsideringPostings(agentId, modelID, func() {
 		l.reporter.Progress("Received considered.")
-		l.ConsideredModel.GetConsideredFromBus(ModellingBusModelListener)
+		l.ConsideredModel.GetConsideredFromBus(CDMModellingBusListener)
 		l.WriteModelToLaTeX()
 		l.CreatePDF()
 	})
@@ -342,13 +342,16 @@ func main() {
 		config = os.Args[1]
 	}
 
+	// Note: the config data can be used to contain config data for different aspects
 	configData := mbconnect.LoadConfig(config, reporter)
 
+	// Note: One ModellingBusConnector can be used for different models of different kinds.
 	ModellingBusConnector := mbconnect.CreateModellingBusConnector(configData, reporter)
-	ModellingBusModelListener := cdm.CreateCDMListener(ModellingBusConnector)
+	
+	CDMModellingBusListener := cdm.CreateCDMListener(ModellingBusConnector)
 
 	CDMLaTeXWriter := CreateCDMLaTeXWriter(config, reporter)
-	CDMLaTeXWriter.ListenForModelPostings(ModellingBusModelListener, "cdm-tester", "0001")
+	CDMLaTeXWriter.ListenForModelPostings(CDMModellingBusListener, "cdm-tester", "0001")
 
 	for true {
 		time.Sleep(1)
