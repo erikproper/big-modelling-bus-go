@@ -19,7 +19,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"fmt"
 )
 
 type (
@@ -49,6 +48,7 @@ func (r *tModellingBusRepositoryConnector) ftpConnect() (*goftp.Client, error) {
 	config := goftp.Config{}
 	config.User = r.ftpUser
 	config.Password = r.ftpPassword
+	config.ActiveTransfers = true
 
 	ftpServerDefinition := r.ftpServer + ":" + r.ftpPort
 	client, err := goftp.DialConfig(config, ftpServerDefinition)
@@ -156,20 +156,17 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 	localFileName := r.ftpLocalWorkDirectory + "/" + timestamp + repositoryEvent.FileExtension
 
 	config := goftp.Config{}
+	config.ActiveTransfers = true
 	serverConnection := ""
 
 	if r.ftpSingleServerMode {
-		fmt.Println("SSM")
 		serverConnection = r.ftpServer + ":" + r.ftpPort
 
 		config.User = r.ftpUser
 		config.Password = r.ftpPassword
 	} else {
 		serverConnection = repositoryEvent.Server + ":" + repositoryEvent.Port
-		fmt.Println("NOTSSM")
 	}
-			fmt.Println(serverConnection)
-
 	
 	client, err := goftp.DialConfig(config, serverConnection)
 	if err != nil {

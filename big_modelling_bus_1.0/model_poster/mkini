@@ -31,9 +31,9 @@ MkIni tuwien                    dm-lab.big.tuwien.ac.at tester true
 
 MkIni ../model_listener/mobile  localhost               listener true
 
-MkIni ../model_listener/home1   192.168.178.16          home-1 true
-MkIni ../model_listener/home2   192.168.178.16          home-2 true
-MkIni ../model_listener/home3   192.168.178.16          home-3 true
+MkIni ../model_listener/home1   frame.fritz.box		home-1 true
+MkIni ../model_listener/home2   frame.fritz.box         home-2 true
+MkIni ../model_listener/home3   frame.fritz.box         home-3 true
 
 MkIni ../model_listener/tuwien1 dm-lab.big.tuwien.ac.at tuwien-1 true
 MkIni ../model_listener/tuwien2 dm-lab.big.tuwien.ac.at tuwien-2 true
