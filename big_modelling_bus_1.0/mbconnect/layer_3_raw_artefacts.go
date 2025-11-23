@@ -14,10 +14,6 @@
 
 package mbconnect
 
-import (
-	"path/filepath"
-)
-
 const (
 	rawArtefactsFilePathElement = "artefacts/file"
 )
@@ -28,20 +24,42 @@ const (
  *
  */
 
-func (b *TModellingBusConnector) PostRawArtefact(context, format, localFilePath string) {
+func (b *TModellingBusConnector) PostRawArtefact(context, format, fileName, localFilePath string) {
 	topicPath := rawArtefactsFilePathElement +
 		"/" + context +
-		"/" + format
-	timestamp := GetTimestamp()
+		"/" + format +
+		"/" + fileName
 
-	b.postFile(topicPath, timestamp, filepath.Ext(localFilePath), localFilePath, timestamp)
+	b.postFile(topicPath, localFilePath, GetTimestamp())
 }
 
-func (b *TModellingBusConnector) DeleteRawArtefact(context, format, localFilePath string) {
+func (b *TModellingBusConnector) ListenForRawArtefactPostings(agentID, context, format, fileName string, postingHandler func(string)) {
+	topicPath := rawArtefactsFilePathElement +
+		"/" + context +
+		"/" + format +
+		"/" + fileName
+		
+	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
+		localFilePath,_ := b.getLinkedFileFromRepository(message, jsonFileName) 
+		postingHandler(localFilePath)
+	})
+}
+
+
+func (b *TModellingBusConnector) GetRawArtefact(agentID, context, format, fileName, localFileName string) string {
+	topicPath := rawArtefactsFilePathElement +
+		"/" + context +
+		"/" + format +
+		"/" + fileName
+
+	localFilePath,_ := b.getFileFromPosting(agentID, topicPath, localFileName)
+	return localFilePath
+}
+
+func (b *TModellingBusConnector) DeleteRawArtefact(context, format, fileName string) {
 	topicPath := rawArtefactsFilePathElement +
 		"/" + context +
 		"/" + format
-	timestamp := GetTimestamp() ///// ???
 
-	b.deleteFile(topicPath, timestamp, filepath.Ext(localFilePath))
+	b.deleteFile(topicPath, fileName)
 }

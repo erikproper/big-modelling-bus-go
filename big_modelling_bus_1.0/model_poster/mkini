@@ -22,7 +22,7 @@ function MkIni {
     echo "port               = 1883"
     echo "broker             = \"$2\""
     echo "prefix             = \"modelling_bus\""
-    echo "max_message_size   = 1024"
+#    echo "max_message_size   = 1024"
   ) > $1.ini
 }
 

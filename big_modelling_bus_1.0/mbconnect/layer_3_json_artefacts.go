@@ -181,8 +181,8 @@ func (b *TModellingBusArtefactConnector) PostState(stateJSON []byte, err error) 
  * Listening
  */
 
-func (b *TModellingBusArtefactConnector) ListenForStatePostings(agentID, ArtefactID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsStateTopicPath(ArtefactID), func(json []byte, timestamp string) {
+func (b *TModellingBusArtefactConnector) ListenForStatePostings(agentID, artefactID string, handler func()) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsStateTopicPath(artefactID), func(json []byte, timestamp string) {
 		b.ArtefactCurrentContent = json
 		b.ArtefactUpdatedContent = json
 		b.ArtefactConsideredContent = json
@@ -192,8 +192,8 @@ func (b *TModellingBusArtefactConnector) ListenForStatePostings(agentID, Artefac
 	})
 }
 
-func (b *TModellingBusArtefactConnector) ListenForUpdatePostings(agentID, ArtefactID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsUpdateTopicPath(ArtefactID), func(json []byte, timestamp string) {
+func (b *TModellingBusArtefactConnector) ListenForUpdatePostings(agentID, artefactID string, handler func()) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsUpdateTopicPath(artefactID), func(json []byte, timestamp string) {
 		ok := false
 		b.ArtefactUpdatedContent, ok = b.applyDelta(b.ArtefactCurrentContent, json)
 		if ok {
@@ -204,13 +204,43 @@ func (b *TModellingBusArtefactConnector) ListenForUpdatePostings(agentID, Artefa
 	})
 }
 
-func (b *TModellingBusArtefactConnector) ListenForConsideringPostings(agentID, ArtefactID string, handler func()) {
-	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsConsideringTopicPath(ArtefactID), func(json []byte, timestamp string) {
+func (b *TModellingBusArtefactConnector) ListenForConsideringPostings(agentID, artefactID string, handler func()) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsConsideringTopicPath(artefactID), func(json []byte, timestamp string) {
 		ok := false
 		b.ArtefactConsideredContent, ok = b.applyDelta(b.ArtefactUpdatedContent, json)
 		if ok {
 			handler()
 		}
+	})
+}
+
+/*
+ * Getting
+ */
+
+func (b *TModellingBusArtefactConnector) GetState(agentID, artefactID string) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsStateTopicPath(artefactID), func(json []byte, timestamp string) {
+		b.ArtefactCurrentContent = json
+		b.ArtefactUpdatedContent = json
+		b.ArtefactConsideredContent = json
+		b.Timestamp = timestamp
+	})
+}
+
+func (b *TModellingBusArtefactConnector) GetUpdate(agentID, artefactID string) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsUpdateTopicPath(artefactID), func(json []byte, timestamp string) {
+		ok := false
+		b.ArtefactUpdatedContent, ok = b.applyDelta(b.ArtefactCurrentContent, json)
+		if ok {
+			b.ArtefactConsideredContent = b.ArtefactUpdatedContent
+		}
+	})
+}
+
+func (b *TModellingBusArtefactConnector) GetConsidering(agentID, artefactID string) {
+	b.ModellingBusConnector.listenForJSONPostings(agentID, b.artefactsConsideringTopicPath(artefactID), func(json []byte, timestamp string) {
+		//		ok := false
+		b.ArtefactConsideredContent, _ = b.applyDelta(b.ArtefactUpdatedContent, json)
 	})
 }
 

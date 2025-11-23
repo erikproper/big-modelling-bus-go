@@ -20,20 +20,21 @@ import (
 )
 
 const (
-	mqttMaxMessageSizeDefault = 10240
+	maxMessageSizeDefault = 10240
 )
 
 type (
 	tModellingBusEventsConnector struct {
 		agentID,
-		mqttUser,
-		mqttPort,
-		mqttRoot,
-		mqttBroker,
-		mqttPassword string
-		mqttMaxMessageSize int
+		user,
+		port,
+		topicRoot,
+		broker,
+		password string
 
-		mqttClient mqtt.Client
+		messages map[string][]byte
+
+		client mqtt.Client
 
 		reporter *TReporter
 	}
@@ -45,18 +46,20 @@ func (e *tModellingBusEventsConnector) connectionLostHandler(c mqtt.Client, err 
 
 func (e *tModellingBusEventsConnector) connectToMQTT() {
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("tcp://" + e.mqttBroker + ":" + e.mqttPort)
-	// Apparently not needed
-	// opts.SetClientID("mqtt-client-" + e.agentID)
-	opts.SetUsername(e.mqttUser)
-	opts.SetPassword(e.mqttPassword)
+	opts.AddBroker("tcp://" + e.broker + ":" + e.port)
+	opts.SetUsername(e.user)
+	opts.SetPassword(e.password)
 	opts.SetConnectionLostHandler(e.connectionLostHandler)
 
-	for connected := false; !connected; {
+	// Apparently not needed:
+	//   opts.SetClientID("mqtt-client-" + e.agentID)
+
+	connected := false
+	for !connected {
 		e.reporter.Progress("Trying to connect to the MQTT broker.")
 
-		e.mqttClient = mqtt.NewClient(opts)
-		token := e.mqttClient.Connect()
+		e.client = mqtt.NewClient(opts)
+		token := e.client.Connect()
 		token.Wait()
 
 		err := token.Error()
@@ -69,29 +72,41 @@ func (e *tModellingBusEventsConnector) connectToMQTT() {
 		}
 	}
 
-	e.reporter.Progress("Connected to the MQTT broker.")
+	e.messages = map[string][]byte{}
+	if connected {
+		e.reporter.Progress("Connected to the MQTT broker.")
+
+		// Continuously connect all used topics underneath the topic root, and their messages
+		// We need this to enable deletion of topics
+		mqttTopicPath := e.topicRoot + "/#"
+		token := e.client.Subscribe(mqttTopicPath, 1, func(client mqtt.Client, msg mqtt.Message) {
+			e.messages[msg.Topic()] = msg.Payload()
+		})
+		token.Wait()
+	}
 }
 
-func (e *tModellingBusEventsConnector) listenForEvents(AgentID, topicPath string, eventHandler func([]byte)) {
-	mqttTopicPath := e.mqttRoot + "/" + AgentID + "/" + topicPath
-	token := e.mqttClient.Subscribe(mqttTopicPath, 1, func(client mqtt.Client, msg mqtt.Message) {
+func (e *tModellingBusEventsConnector) listenForEvents(agentID, topicPath string, eventHandler func([]byte)) {
+	mqttTopicPath := e.topicRoot + "/" + agentID + "/" + topicPath
+	token := e.client.Subscribe(mqttTopicPath, 1, func(client mqtt.Client, msg mqtt.Message) {
 		eventHandler(msg.Payload())
 	})
 	token.Wait()
 }
 
+func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath string) []byte {
+	mqttTopicPath := e.topicRoot + "/" + agentID + "/" + topicPath
+	return e.messages[mqttTopicPath]
+}
+
 func (e *tModellingBusEventsConnector) postEvent(topicPath string, message []byte) {
-	mqttTopicPath := e.mqttRoot + "/" + e.agentID + "/" + topicPath
-	token := e.mqttClient.Publish(mqttTopicPath, 0, true, string(message))
+	mqttTopicPath := e.topicRoot + "/" + e.agentID + "/" + topicPath
+	token := e.client.Publish(mqttTopicPath, 0, true, string(message))
 	token.Wait()
 }
 
 func (e *tModellingBusEventsConnector) deleteEvent(topicPath string) {
 	e.postEvent(topicPath, []byte{})
-}
-
-func (e *tModellingBusEventsConnector) eventPayloadAllowed(payload []byte) bool {
-	return len(payload) <= e.mqttMaxMessageSize
 }
 
 func createModellingBusEventsConnector(topicBase, agentID string, configData *TConfigData, reporter *TReporter) *tModellingBusEventsConnector {
@@ -101,12 +116,11 @@ func createModellingBusEventsConnector(topicBase, agentID string, configData *TC
 
 	// Get data from the config file
 	e.agentID = agentID
-	e.mqttPort = configData.GetValue("mqtt", "port").String()
-	e.mqttUser = configData.GetValue("mqtt", "user").String()
-	e.mqttBroker = configData.GetValue("mqtt", "broker").String()
-	e.mqttPassword = configData.GetValue("mqtt", "password").String()
-	e.mqttRoot = configData.GetValue("mqtt", "prefix").String() + "/" + topicBase
-	e.mqttMaxMessageSize = configData.GetValue("mqtt", "max_message_size").IntWithDefault(mqttMaxMessageSizeDefault)
+	e.port = configData.GetValue("mqtt", "port").String()
+	e.user = configData.GetValue("mqtt", "user").String()
+	e.broker = configData.GetValue("mqtt", "broker").String()
+	e.password = configData.GetValue("mqtt", "password").String()
+	e.topicRoot = configData.GetValue("mqtt", "prefix").String() + "/" + topicBase
 
 	e.connectToMQTT()
 

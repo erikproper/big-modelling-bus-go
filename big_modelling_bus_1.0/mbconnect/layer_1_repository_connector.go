@@ -40,10 +40,9 @@ type (
 )
 
 type tRepositoryEvent struct {
-	Server        string `json:"server,omitempty"`
-	Port          string `json:"port,omitempty"`
-	FilePath      string `json:"file path,omitempty"`
-	FileExtension string `json:"file extension,omitempty"`
+	Server   string `json:"server,omitempty"`
+	Port     string `json:"port,omitempty"`
+	FilePath string `json:"file path,omitempty"`
 }
 
 func (r *tModellingBusRepositoryConnector) ftpConnect() (*goftp.Client, error) {
@@ -83,9 +82,9 @@ func (r *tModellingBusRepositoryConnector) mkRepositoryDirectoryPath(remoteDirec
 	}
 }
 
-func (r *tModellingBusRepositoryConnector) addFile(topicPath, fileName, fileExtension, localFilePath string) tRepositoryEvent {
+func (r *tModellingBusRepositoryConnector) addFile(topicPath, localFilePath string) tRepositoryEvent {
 	remoteDirectoryPath := r.agentRoot + "/" + topicPath
-	remoteFilePath := remoteDirectoryPath + "/" + fileName + fileExtension
+	remoteFilePath := remoteDirectoryPath + "/" + filePayload
 
 	r.mkRepositoryDirectoryPath(remoteDirectoryPath)
 
@@ -117,8 +116,8 @@ func (r *tModellingBusRepositoryConnector) addFile(topicPath, fileName, fileExte
 		repositoryEvent.Server = r.server
 		repositoryEvent.Port = r.port
 	}
-	repositoryEvent.FilePath = r.agentRoot + "/" + topicPath + "/" + fileName
-	repositoryEvent.FileExtension = fileExtension
+	repositoryEvent.FilePath = remoteFilePath
+	//	repositoryEvent.FileExtension = fileExtension
 
 	return repositoryEvent
 }
@@ -150,15 +149,15 @@ func (r *tModellingBusRepositoryConnector) deletePath(topicPath string) {
 	deleteRepositoryPath(client, remotePath)
 }
 
-func (r *tModellingBusRepositoryConnector) deleteFile(topicPath, fileName, fileExtension string) {
-	filePath := topicPath + "/" + fileName + fileExtension
+func (r *tModellingBusRepositoryConnector) deleteFile(topicPath, fileName string) {
+	filePath := topicPath + "/" + fileName
 
 	r.deletePath(filePath)
 }
 
 func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json []byte) tRepositoryEvent {
 	// Define the temporary local file path
-	localFilePath := r.localWorkDirectory + "/" + GetTimestamp() + jsonFileExtension
+	localFilePath := r.localWorkDirectory + "/" + jsonFileName
 
 	// Create a temporary local file with the JSON record
 	err := os.WriteFile(filepath.FromSlash(localFilePath), json, 0644)
@@ -169,11 +168,11 @@ func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json 
 	// Cleanup the temporary file afterwards
 	defer os.Remove(filepath.FromSlash(localFilePath))
 
-	return r.addFile(topicPath, jsonFileName, jsonFileExtension, localFilePath)
+	return r.addFile(topicPath, localFilePath)
 }
 
-func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEvent, timestamp string) string {
-	localFileName := r.localWorkDirectory + "/" + timestamp + repositoryEvent.FileExtension
+func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEvent, fileName string) string {
+	localFileName := r.localWorkDirectory + "/" + fileName
 
 	config := goftp.Config{}
 	config.ActiveTransfers = r.activeTransfers
@@ -201,7 +200,7 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 		return ""
 	}
 
-	err = client.Retrieve(repositoryEvent.FilePath+repositoryEvent.FileExtension, File)
+	err = client.Retrieve(repositoryEvent.FilePath, File)
 	if err != nil {
 		r.reporter.Error("Something went wrong retrieving file", err)
 		return ""

@@ -40,8 +40,9 @@ func main() {
 	// Note: One ModellingBusConnector can be used for different models of different kinds.
 	ModellingBusConnector := mbconnect.CreateModellingBusConnector(configData, reporter)
 
-	ModellingBusConnector.PostRawArtefact("context", "golang", "main.go")
-	//	ModellingBusConnector.DeleteRawArtefact("context", "golang", "main.go")
+	ModellingBusConnector.PostRawArtefact("context", "golang", "test", "main.go")
+	fmt.Println(ModellingBusConnector.GetRawArtefact("cdm-tester", "context", "golang", "test", "local.go"))
+	//	ModellingBusConnector.DeleteRawArtefact("context", "golang", "test.go")
 
 	// Note that the 0001 is for local use. No issue to e.g. make this into 0001/02 to indicate version numbers
 	CDMModellingBusPoster := cdm.CreateCDMPoster(ModellingBusConnector, "0001")

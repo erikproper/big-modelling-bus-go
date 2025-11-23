@@ -1,4 +1,11 @@
-[ ] Clean/delete experiment
+[ ] Make it possible to not listen, but pickup latest version
+    That is ... pro-active, and across s/u/c
+    ==> Via subscribe, followed by immediate unsubscribe??
+    ==> Might require a change of strategy in the sense of ALWAYS posting JSONs via the repo
+
+[ ] Local working folder must be a visible attribute. Via function?
+
+[ ] Clean/delete experiment ... path-recurse in MQTT
 
 [ ] Clean listener code
 
@@ -13,6 +20,16 @@
     - TConfig
     - TRepository (FTP)
     - TEventBus (MQTT)
+
+[ ] Coordination
+- do/listen
+- task
+- raw_inputs (sequence) of path
+- raw_outputs (sequence) of path
+- json_inputs (sequence) of version + path (s/u/c??)
+- json_outputs (sequence) of version + path (s/u/c??)
+Replies with '{ "acknowledgement", "true" }'
+
 
 [ ] Commandline 
     - files post/listen

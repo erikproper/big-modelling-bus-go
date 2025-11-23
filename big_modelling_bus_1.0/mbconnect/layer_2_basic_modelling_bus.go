@@ -33,15 +33,14 @@ type (
 type tEvent struct {
 	tRepositoryEvent
 
-	Timestamp   string          `json:"timestamp"`
-	JSONMessage json.RawMessage `json:"message,omitempty"`
+	Timestamp string `json:"timestamp"`
 }
 
-func (b *TModellingBusConnector) postFile(topicPath, fileName, fileExtension, localFilePath, timestamp string) {
+func (b *TModellingBusConnector) postFile(topicPath, localFilePath, timestamp string) {
 	event := tEvent{}
 	event.Timestamp = timestamp
 
-	event.tRepositoryEvent = b.modellingBusRepositoryConnector.addFile(topicPath, fileName, fileExtension, localFilePath)
+	event.tRepositoryEvent = b.modellingBusRepositoryConnector.addFile(topicPath, localFilePath)
 
 	message, err := json.Marshal(event)
 	if err != nil {
@@ -52,85 +51,85 @@ func (b *TModellingBusConnector) postFile(topicPath, fileName, fileExtension, lo
 	b.modellingBusEventsConnector.postEvent(topicPath, message)
 }
 
-func (b *TModellingBusConnector) deleteFile(topicPath, fileName, fileExtension string) {
+func (b *TModellingBusConnector) deleteFile(topicPath, fileName string) {
 	b.modellingBusEventsConnector.deleteEvent(topicPath)
-	b.modellingBusRepositoryConnector.deleteFile(topicPath, fileName, fileExtension)
+	b.modellingBusRepositoryConnector.deleteFile(topicPath, fileName)
 }
 
 func (b *TModellingBusConnector) deleteExperiment() {
-//HERE
-//	b.modellingBusEventsConnector.deleteEvent(topicPath)
-//	b.modellingBusRepositoryConnector.deleteFile(topicPath, fileName, fileExtension)
+	// HERE
+	//
+	//	b.modellingBusEventsConnector.deleteEvent(topicPath)
+	//	b.modellingBusRepositoryConnector.deleteFile(topicPath, fileName, fileExtension)
 }
 
-func (b *TModellingBusConnector) listenForFilePostings(agentID, topicPath string, postingHandler func(string)) {
+func (b *TModellingBusConnector) getLinkedFileFromRepository(message []byte, localFileName string) (string, string) {
+	event := tEvent{}
+
+	// WORK: Use a generic error checker for Unmarshal. Should return a bool
+	err := json.Unmarshal(message, &event)
+	if err == nil {
+		return b.modellingBusRepositoryConnector.getFile(event.tRepositoryEvent, localFileName), event.Timestamp
+	} else {
+		return "", ""
+	}
+}
+
+func (b *TModellingBusConnector) listenForFilePostings(agentID, topicPath, localFileName string, postingHandler func(string, string)) {
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
-		event := tEvent{}
-
-		// Use a generic error checker for Unmarshal. Should return a bool
-		err := json.Unmarshal(message, &event)
-		if err == nil {
-			tempFilePath := b.modellingBusRepositoryConnector.getFile(event.tRepositoryEvent, GetTimestamp())
-
-			postingHandler(tempFilePath)
-		}
-
+		postingHandler(b.getLinkedFileFromRepository(message, localFileName))
 	})
 }
 
+func (b *TModellingBusConnector) getFileFromPosting(agentID, topicPath, localFileName string) (string, string) {
+	return b.getLinkedFileFromRepository(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath), localFileName)
+}
+
 func (b *TModellingBusConnector) postJSON(topicPath, jsonVersion string, jsonMessage []byte, timestamp string) {
-	if b.modellingBusEventsConnector.eventPayloadAllowed(jsonMessage) {
-		event := tEvent{}
-		event.Timestamp = timestamp
-		event.JSONMessage = jsonMessage
+	event := tEvent{}
+	event.Timestamp = timestamp
 
-		message, err := json.Marshal(event)
-		if err != nil {
-			b.reporter.Error("Something went wrong JSONing the link data. %s", err)
-			return
-		}
+	event.tRepositoryEvent = b.modellingBusRepositoryConnector.addJSONAsFile(topicPath, jsonMessage)
 
-		b.modellingBusEventsConnector.postEvent(topicPath, message)
-
-		// CLEAN any old ones on the ftp server!!
-	} else {
-		event := tEvent{}
-		event.Timestamp = timestamp
-
-		event.tRepositoryEvent = b.modellingBusRepositoryConnector.addJSONAsFile(topicPath, jsonMessage)
-
-		message, err := json.Marshal(event)
-		if err != nil {
-			b.reporter.Error("Something went wrong JSONing the link data. %s", err)
-			return
-		}
-
-		b.modellingBusEventsConnector.postEvent(topicPath, message)
+	message, err := json.Marshal(event)
+	if err != nil {
+		b.reporter.Error("Something went wrong JSONing the link data. %s", err)
+		return
 	}
+
+	b.modellingBusEventsConnector.postEvent(topicPath, message)
+}
+
+func (b *TModellingBusConnector) getJSONFromTemporaryFile(tempFilePath, timestamp string) ([]byte, string) {
+	jsonPayload, err := os.ReadFile(tempFilePath)
+	os.Remove(tempFilePath)
+
+	if err != nil {
+		b.reporter.Error("Something went wrong while retrieving file. %s", err)
+		return []byte{}, ""
+	}
+	
+	return jsonPayload, timestamp
 }
 
 func (b *TModellingBusConnector) listenForJSONPostings(agentID, topicPath string, postingHandler func([]byte, string)) {
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
-		event := tEvent{}
-
-		err := json.Unmarshal(message, &event)
-		if err == nil {
-			if len(event.JSONMessage) > 0 {
-				postingHandler(event.JSONMessage, event.Timestamp)
-			} else {
-				tempFilePath := b.modellingBusRepositoryConnector.getFile(event.tRepositoryEvent, GetTimestamp())
-
-				jsonPayload, err := os.ReadFile(tempFilePath)
-				if err == nil {
-					postingHandler(jsonPayload, event.Timestamp)
-				} else {
-					b.reporter.Error("Something went wrong while retrieving file. %s", err)
-				}
-
-				os.Remove(tempFilePath)
-			}
-		}
+		postingHandler(b.getJSONFromTemporaryFile(b.getLinkedFileFromRepository(message, jsonFileName)))
 	})
+}
+
+func (b *TModellingBusConnector) getJSON(agentID, topicPath string) ([]byte, string) {
+	tempFilePath, timestamp := b.getLinkedFileFromRepository(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath), jsonFileName)
+
+	jsonPayload, err := os.ReadFile(tempFilePath)
+	os.Remove(tempFilePath)
+
+	if err != nil {
+		b.reporter.Error("Something went wrong while retrieving file. %s", err)
+		return []byte{}, ""
+	}
+
+	return jsonPayload, timestamp
 }
 
 /*
