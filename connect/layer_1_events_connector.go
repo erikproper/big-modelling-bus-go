@@ -17,6 +17,8 @@ package connect
 import (
 	"strings"
 	"time"
+
+	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -36,7 +38,7 @@ type (
 
 		client mqtt.Client
 
-		reporter *TReporter
+		reporter *generics.TReporter
 	}
 )
 
@@ -182,7 +184,7 @@ func (e *tModellingBusEventsConnector) deleteEnvironment(environmentID string) {
 	}
 }
 
-func createModellingBusEventsConnector(environmentID, agentID string, configData *TConfigData, reporter *TReporter) *tModellingBusEventsConnector {
+func createModellingBusEventsConnector(environmentID, agentID string, configData *generics.TConfigData, reporter *generics.TReporter) *tModellingBusEventsConnector {
 	e := tModellingBusEventsConnector{}
 
 	// Get data from the config file
