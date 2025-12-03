@@ -29,7 +29,7 @@ type (
 		agentID,
 		environmentID string
 
-		reporter   *generics.TReporter
+		Reporter   *generics.TReporter
 		configData *generics.TConfigData
 	}
 )

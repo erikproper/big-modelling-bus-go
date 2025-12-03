@@ -1,20 +1,25 @@
-[ ] Reporting levels as flag + flags module
-
 [ ] Command lines:
 mbus 
   -config <xxx>.ini
-  -post_raw_artefact    <t> <file>
-  -post_json_artefact.  <t> [<json>]
-  -post_observation     <t> [<json>]
-  -post_coordination    <t> [<json>]
-  -get_raw_artefact     <t> <local_file>
-  -get_json_artefact    <t> [<file_name>]
-  -listen_raw_artefact  <t> <file> 
-  -listen_json_artefact <t> [<file_name>] [-repeat]
-  -listen_observation.  <t> [<file_name>] [-repeat]
-  -listen_coordination  <t> [<file_name>] [-repeat]
-  -delete <t>
+  ---
+  -topic <t>
+  -post_raw_artefact    <file>
+  -post_json_artefact   [<json>]
+  -post_observation     [<json>]
+  -post_coordination    [<json>]
+  -get_raw_artefact     <local_file>
+  -get_json_artefact    [<file_name>]
+  -listen_raw_artefact  <file> 
+  -listen_json_artefact [<file_name>] [-repeat]
+  -listen_observation.  [<file_name>] [-repeat]
+  -listen_coordination  [<file_name>] [-repeat]
+  -delete
+  ---
   -delete_experiment <e>
+
+[ ] var (
+	configFlag      = flag.String("config", defaultIni, "Configuration file")
+
 
 [ ] CDM listener and poster as cdm rest repos
 
