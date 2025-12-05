@@ -80,13 +80,13 @@ func (b *TModellingBusConnector) postJSONAsFile(topicPath string, jsonMessage []
 	b.modellingBusEventsConnector.postEvent(topicPath, message)
 }
 
-type tStreamEvent struct {
+type tStreamedEvent struct {
 	Timestamp string          `json:"timestamp"`
 	Payload   json.RawMessage `json:"payload"`
 }
 
-func (b *TModellingBusConnector) postJSONDirect(topicPath string, jsonMessage []byte, timestamp string) {
-	event := tStreamEvent{}
+func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessage []byte, timestamp string) {
+	event := tStreamedEvent{}
 	event.Timestamp = timestamp
 	event.Payload = jsonMessage
 

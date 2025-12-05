@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	rawObservationFilePathElement  = "observation/raw"
-	jsonObservationFilePathElement = "observation/json"
+	rawObservationsPathElement      = "observations/raw"
+	jsonObservationsPathElement     = "observations/json"
+	streamedObservationsPathElement = "observations/streamed"
 )
 
 /*
@@ -28,12 +29,17 @@ const (
  */
 
 func (b *TModellingBusConnector) rawObservationsTopicPath(observationID string) string {
-	return rawArtefactsPathElement +
+	return rawObservationsPathElement +
 		"/" + observationID
 }
 
 func (b *TModellingBusConnector) jsonObservationsTopicPath(observationID string) string {
-	return jsonArtefactsPathElement +
+	return jsonObservationsPathElement +
+		"/" + observationID
+}
+
+func (b *TModellingBusConnector) streamedObservationsTopicPath(observationID string) string {
+	return streamedObservationsPathElement +
 		"/" + observationID
 }
 
@@ -44,7 +50,7 @@ func (b *TModellingBusConnector) jsonObservationsTopicPath(observationID string)
  */
 
 /*
- * Posting artefacts
+ * Posting observations
  */
 
 func (b *TModellingBusConnector) PostRawObservation(observationID, localFilePath string) {
@@ -53,6 +59,10 @@ func (b *TModellingBusConnector) PostRawObservation(observationID, localFilePath
 
 func (b *TModellingBusConnector) PostJSONObservation(observationID string, json []byte) {
 	b.postJSONAsFile(b.jsonObservationsTopicPath(observationID), json, generics.GetTimestamp())
+}
+
+func (b *TModellingBusConnector) PostStreamedObservation(observationID string, json []byte) {
+	b.postJSONAsStreamed(b.streamedObservationsTopicPath(observationID), json, generics.GetTimestamp())
 }
 
 /*
