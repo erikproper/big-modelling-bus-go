@@ -223,3 +223,13 @@ func createModellingBusEventsConnector(environmentID, agentID string, configData
 
 	return &e
 }
+
+/*
+ *
+ * Externally visible functionality
+ *
+ */
+
+const (
+	PostingOnly = true
+)
