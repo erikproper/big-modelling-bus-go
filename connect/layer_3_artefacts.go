@@ -91,7 +91,7 @@ func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, ol
 		return
 	}
 
-	deltaOperationsJSON, err := generics.jsonDiff(oldStateJSON, newStateJSON)
+	deltaOperationsJSON, err := generics.JSONDiff(oldStateJSON, newStateJSON)
 	if err != nil {
 		b.ModellingBusConnector.Reporter.Error("Something went wrong running the JSON diff. %s", err)
 		return
@@ -123,7 +123,7 @@ func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.Ra
 		return currentJSONState, false
 	}
 
-	newJSONState, err := generics.jsonApplyPatch(currentJSONState, delta.Operations)
+	newJSONState, err := generics.JSONApplyPatch(currentJSONState, delta.Operations)
 	if err != nil {
 		b.ModellingBusConnector.Reporter.Error("Applying patch didn't work. %s", err)
 		return currentJSONState, false
