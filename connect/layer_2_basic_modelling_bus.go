@@ -136,7 +136,7 @@ func (b *TModellingBusConnector) getStreamed(agentID, topicPath string) ([]byte,
 	if err == nil {
 		return event.payload, event.Timestamp
 	} else {
-		return "", ""
+		return []byte{}, ""
 	}
 }
 
