@@ -1,7 +1,7 @@
 /*
  *
  * Module:    BIG Modelling Bus
- * Package:   Generic
+ * Package:   Connect
  * Component: Layer 3 - Observation
  *
  * ..... ... .. .

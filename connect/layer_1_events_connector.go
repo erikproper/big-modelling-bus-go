@@ -1,14 +1,16 @@
 /*
  *
  * Module:    BIG Modelling Bus
- * Package:   Generic
+ * Package:   Connect
  * Component: Layer 1 - Events Connector
  *
- * ..... ... .. .
+ * This comonent provides the connectivity to the MQTT-based event bus.
+ * Most functionality is intended as internal functionality to be used by the other components of this package.
+ * Nevertheless, some functionality is externally visible.
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.11.2025
+ * Version of: 05.12.2025
  *
  */
 

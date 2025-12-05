@@ -1,13 +1,13 @@
 /*
  *
- * Package:   connect
- * Layer:     generic
- * Component: config_reader
+ * Module:    BIG Modelling Bus
+ * Package:   Generic
+ * Component: Config Reader
  *
  * This component reads ini files.
  * It gladly uses the functionality provided by "gopkg.in/ini.v1".
- * Nevertheless, having our own configuration loader makes the rest of the mbconnect code less dependent on
- * potential changes to the latter package.
+ * Nevertheless, having our own configuration loader makes the rest of the code less dependent on potential changes to
+ * the latter package.
  * Furthermore, it also allows us to:
  * - introduce the option of default values (see StringWithDefault, etc) of default values, when no value is
  *   provided in the ini file.

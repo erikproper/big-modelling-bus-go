@@ -4,11 +4,12 @@
  * Package:   Generic
  * Component: Timestamps
  *
- * ..... ... .. .
+ * This component computes unique (within the present run-time environment) timestamps.
+ * The uniqueness is based on the current time up to seconds, and is combined with a counter
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.11.2025
+ * Version of: 27.11.2025
  *
  */
 

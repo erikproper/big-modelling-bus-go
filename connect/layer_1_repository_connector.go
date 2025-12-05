@@ -1,14 +1,14 @@
 /*
  *
  * Module:    BIG Modelling Bus
- * Package:   Generic
+ * Package:   Connect
  * Component: Layer 1 - Repository Connector
  *
- * ..... ... .. .
+ * This component provides
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.11.2025
+ * Version of: 29.11.2025
  *
  */
 

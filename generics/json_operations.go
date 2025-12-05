@@ -4,11 +4,15 @@
  * Package:   Generic
  * Component: JSON Operations
  *
- * ..... ... .. .
+ * This component provides the functionality compute differences between JSONs as well as apply patches.
+ * The differences/patches are compliant to the https://datatracker.ietf.org/doc/html/rfc6902 standard.
+ * This component gladly uses the functionality provided by "github.com/evanphx/json-patch" and "github.com/wI2L/jsondiff"
+ * Nevertheless, having our own Diff and Patch functions makes the rest of the code less dependent on potential changes to
+ * the latter two packages.
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
- * Version of: XX.11.2025
+ * Version of: 29.11.2025
  *
  */
 

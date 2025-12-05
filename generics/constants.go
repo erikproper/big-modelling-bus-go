@@ -4,7 +4,7 @@
  * Package:   Generic
  * Component: Constants
  *
- * Key constants used by the modelling bus connector package
+ * This component provides key constants used by the BIG Modelling Bus code
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *

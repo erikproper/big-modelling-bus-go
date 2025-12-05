@@ -4,8 +4,8 @@
  * Package:   Generic
  * Component: Reporting
  *
- * This module is concerned with the reporting of errors, progress, etc, to the user.
- * For the moment, it only involves the reporting of progress and errors.
+ * This component is concerned with the reporting of errors, progress, etc, to the user.
+ * For the moment, it only involves the reporting of progress and errors, including panics.
  *
  * Author: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
