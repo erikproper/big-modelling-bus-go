@@ -80,7 +80,7 @@ func (b *TModellingBusConnector) GetRawObservation(agentID, observationID, local
 	return localFilePath
 }
 
-func (b *TModellingBusConnector) GetJSONObservation(agentID, observationID string) []byte {
+func (b *TModellingBusConnector) GetJSONObservation(agentID, observationID string) ([]byte, string) {
 	return b.getJSON(agentID, b.jsonObservationsTopicPath(observationID))
 }
 
