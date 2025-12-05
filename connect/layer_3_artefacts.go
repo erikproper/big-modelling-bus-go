@@ -46,6 +46,10 @@ type (
 	}
 )
 
+/*
+ * Defining topic paths
+ */
+
 func (b *TModellingBusArtefactConnector) rawArtefactsTopicPath(artefactID string) string {
 	return rawArtefactsPathElement +
 		"/" + artefactID
@@ -178,7 +182,7 @@ func (b *TModellingBusArtefactConnector) PrepareForPosting(ArtefactID string) {
 }
 
 func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFilePath string) {
-	b.ModellingBusConnector.postFile(b.rawArtefactsTopicPath(b.ArtefactID), localFilePath)
+	b.ModellingBusConnector.postFile(b.rawArtefactsTopicPath(b.ArtefactID), localFilePath, generics.GetTimestamp())
 }
 
 func (b *TModellingBusArtefactConnector) PostJSONArtefactState(stateJSON []byte, err error) {

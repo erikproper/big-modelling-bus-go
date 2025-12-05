@@ -2,7 +2,7 @@
  *
  * Module:    BIG Modelling Bus
  * Package:   Generic
- * Component: Layer 1 - Basic Modelling Bus
+ * Component: Layer 2 - Basic Modelling Bus
  *
  * ..... ... .. .
  *
@@ -34,8 +34,8 @@ type (
 	}
 )
 
-func (b *TModellingBusConnector) postFile(topicPath, localFilePath string) {
-	event := b.modellingBusRepositoryConnector.addFile(topicPath, localFilePath, generics.GetTimestamp())
+func (b *TModellingBusConnector) postFile(topicPath, localFilePath, timestamp string) {
+	event := b.modellingBusRepositoryConnector.addFile(topicPath, localFilePath, timestamp)
 
 	message, err := json.Marshal(event)
 	if err != nil {
