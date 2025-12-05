@@ -81,9 +81,9 @@ func (b *TModellingBusConnector) ListenForJSONObservationPostings(agentID, obser
 	})
 }
 
-//func (b *TModellingBusConnector) PostStreamedObservation(observationID string, json []byte) {
-//	b.postJSONAsStreamed(b.streamedObservationsTopicPath(observationID), json, generics.GetTimestamp())
-//}
+func (b *TModellingBusConnector) ListenForStreamedObservationPostings(agentID, observationID string, postingHandler func([]byte, string)) {
+	b.listenForStreamedPostings(agentID, b.streamedObservationsTopicPath(observationID), postingHandler)
+}
 
 /*
  * Retrieving observations
@@ -111,4 +111,8 @@ func (b *TModellingBusConnector) DeleteRawObservation(observationID string) {
 
 func (b *TModellingBusConnector) DeleteJSONObservation(observationID string) {
 	b.deletePosting(b.jsonObservationsTopicPath(observationID))
+}
+
+func (b *TModellingBusConnector) DeleteStreamedObservation(observationID string) {
+	b.deletePosting(b.streamedObservationsTopicPath(observationID))
 }
