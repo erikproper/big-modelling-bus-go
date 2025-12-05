@@ -24,28 +24,37 @@ import (
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
+/*
+ * Defining the events connector
+ */
+
 type (
 	tModellingBusEventsConnector struct {
-		user,
-		port,
-		broker,
-		prefix,
-		agentID,
-		password,
-		environmentID string
+		user, /* MQTT user */
+		port, /* MQTT port */
+		broker, /* MQTT broker */
+		prefix, /* MQTT topic prefix */
+		agentID, /* Agent ID to be used in postings on the MQTT bus */
+		password, /* MQTT password */
+		environmentID string /* Modelling environment ID */
 
-		loadDelay int
+		loadDelay int /* Delay (in milliseconds) to allow messages to arrive from the MQTT bus */
 
-		connectionBeingOpenened bool
+		connectionBeingOpenened bool /* Whether the MQTT connection is still being opened. */
+		/* The opening phase is special, as we need to collect all existing messages on the bus. CHECK!!! */
 
-		currentMessages,
-		openingMessages map[string][]byte
+		currentMessages, /* Currently known messages on the MQTT bus */
+		openingMessages map[string][]byte /* Messages known at the opening of the connection to the MQTT bus */
 
-		client mqtt.Client
+		client mqtt.Client /* The MQTT client */
 
-		reporter *generics.TReporter
+		reporter *generics.TReporter /* The Reporter to be used to report progress, error, and panics */
 	}
 )
+
+/*
+ * Defining topic roots and paths
+ */
 
 func (e *tModellingBusEventsConnector) mqttEnvironmentTopicRoot() string {
 	return e.prefix + "/" + generics.ModellingBusVersion + "/" + e.environmentID
@@ -62,6 +71,8 @@ func (e *tModellingBusEventsConnector) mqttAgentTopicRootFor(environmentID, agen
 func (e *tModellingBusEventsConnector) mqttAgentTopicPath(agentID, topicPath string) string {
 	return e.prefix + "/" + generics.ModellingBusVersion + "/" + e.environmentID + "/" + agentID + "/" + topicPath
 }
+
+////
 
 func (e *tModellingBusEventsConnector) connectionLostHandler(c mqtt.Client, err error) {
 	e.reporter.Panic("MQTT connection lost. %s", err)
