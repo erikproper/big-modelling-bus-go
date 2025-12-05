@@ -267,19 +267,19 @@ func (b *TModellingBusArtefactConnector) GetRawArtefactState(agentID, topicPath,
 }
 
 func (b *TModellingBusArtefactConnector) GetJSONArtefactState(agentID, artefactID string) {
-	b.updateCurrentJSONArtefact(b.ModellingBusConnector.GetJSONArtefactState(agentID, b.jsonArtefactsStateTopicPath(artefactID)))
+	b.updateCurrentJSONArtefact(b.ModellingBusConnector.getJSON(agentID, b.jsonArtefactsStateTopicPath(artefactID)))
 }
 
 func (b *TModellingBusArtefactConnector) GetJSONArtefactUpdate(agentID, artefactID string) {
 	b.GetJSONArtefactState(agentID, artefactID)
 
-	b.updateUpdatedJSONArtefact(b.ModellingBusConnector.GetJSONArtefactState(agentID, b.jsonArtefactsUpdateTopicPath(artefactID)))
+	b.updateUpdatedJSONArtefact(b.ModellingBusConnector.getJSON(agentID, b.jsonArtefactsUpdateTopicPath(artefactID)))
 }
 
 func (b *TModellingBusArtefactConnector) GetJSONArtefactConsidering(agentID, artefactID string) {
 	b.GetJSONArtefactUpdate(agentID, artefactID)
 
-	b.updateConsideringJSONArtefact(b.ModellingBusConnector.GetJSONArtefactState(agentID, b.jsonArtefactsConsideringTopicPath(artefactID)))
+	b.updateConsideringJSONArtefact(b.ModellingBusConnector.getJSON(agentID, b.jsonArtefactsConsideringTopicPath(artefactID)))
 }
 
 /*
