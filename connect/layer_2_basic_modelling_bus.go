@@ -134,7 +134,7 @@ func (b *TModellingBusConnector) getStreamed(agentID, topicPath string) ([]byte,
 
 	err := json.Unmarshal(message, &event)
 	if err == nil {
-		return event.payload, event.Timestamp
+		return event.Payload, event.Timestamp
 	} else {
 		return []byte{}, ""
 	}
