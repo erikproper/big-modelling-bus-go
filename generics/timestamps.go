@@ -1,8 +1,8 @@
 /*
  *
- * Package: mbconnect
- * Layer:   generic
- * Module:  timestamps
+ * Module:    BIG Modelling Bus
+ * Package:   Generic
+ * Component: Timestamps
  *
  * ..... ... .. .
  *

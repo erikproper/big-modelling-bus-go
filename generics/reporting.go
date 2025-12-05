@@ -1,8 +1,8 @@
 /*
  *
- * Package: mbconnect
- * Layer:   generic
- * Module:  reporting
+ * Module:    BIG Modelling Bus
+ * Package:   Generic
+ * Component: Reporting
  *
  * This module is concerned with the reporting of errors, progress, etc, to the user.
  * For the moment, it only involves the reporting of progress and errors.

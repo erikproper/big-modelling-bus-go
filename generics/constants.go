@@ -1,8 +1,8 @@
 /*
  *
- * Package: mbconnect
- * Layer:   generic
- * Module:  constants
+ * Module:    BIG Modelling Bus
+ * Package:   Generic
+ * Component: Constants
  *
  * Key constants used by the modelling bus connector package
  *

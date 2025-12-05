@@ -1,6 +1,6 @@
 /*
  *
- * Package:   mbconnect
+ * Package:   connect
  * Layer:     generic
  * Component: config_reader
  *
