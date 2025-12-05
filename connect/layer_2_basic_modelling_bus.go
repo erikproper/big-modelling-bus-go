@@ -128,7 +128,7 @@ func (b *TModellingBusConnector) getJSON(agentID, topicPath string) ([]byte, str
 }
 
 func (b *TModellingBusConnector) getStreamed(agentID, topicPath string) ([]byte, string) {
-	event := tStreamedEvent
+	event := tStreamedEvent{}
 
 	message := b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath)
 
