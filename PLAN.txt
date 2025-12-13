@@ -20,6 +20,8 @@ mbus
 
 [ ] bus_listener in GO instead of mosquitto
 
+[ ] foundJSONIssue
+
 [ ] CDM listener and poster as cdm rest repos
 
 [ ] Clean cdm_listener code

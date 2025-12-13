@@ -167,14 +167,17 @@ func (b *TModellingBusConnector) getJSON(agentID, topicPath string) ([]byte, str
 }
 
 func (b *TModellingBusConnector) getStreamed(agentID, topicPath string) ([]byte, string) {
+	// Get the message from the event bus
 	event := tStreamedEvent{}
-
 	message := b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath)
 
+	// Unmarshal the message
 	err := json.Unmarshal(message, &event)
 	if err == nil {
+		// Return the payload and timestamp
 		return event.Payload, event.Timestamp
 	} else {
+		// Something went wrong, so return an empty result
 		return []byte{}, ""
 	}
 }
@@ -184,23 +187,27 @@ func (b *TModellingBusConnector) getStreamed(agentID, topicPath string) ([]byte,
  */
 
 func (b *TModellingBusConnector) listenForFilePostings(agentID, topicPath, localFileName string, postingHandler func(string, string)) {
+	// Listen for raw file related events on the event bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
 		postingHandler(b.getLinkedFileFromRepository(message, localFileName))
 	})
 }
 
 func (b *TModellingBusConnector) listenForJSONFilePostings(agentID, topicPath string, postingHandler func([]byte, string)) {
+	// Listen for JSON file related events on the event bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
 		postingHandler(b.getJSONFromTemporaryFile(b.getLinkedFileFromRepository(message, generics.JSONFileName)))
 	})
 }
 
 func (b *TModellingBusConnector) listenForStreamedPostings(agentID, topicPath string, postingHandler func([]byte, string)) {
+	// Listen for streamed events on the event bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
+		// Unmarshal the streamed event
 		event := tStreamedEvent{}
-
 		err := json.Unmarshal(message, &event)
 		if err == nil {
+			// Call the posting handler with the payload and timestamp, of the unmashalling went well.
 			postingHandler(event.Payload, event.Timestamp)
 		}
 	})
@@ -211,6 +218,7 @@ func (b *TModellingBusConnector) listenForStreamedPostings(agentID, topicPath st
  */
 
 func (b *TModellingBusConnector) deletePosting(topicPath string) {
+	// Delete the posting both from the event bus and the repository
 	b.modellingBusEventsConnector.deletePostingPath(topicPath)
 	b.modellingBusRepositoryConnector.deletePostingPath(topicPath)
 }
@@ -222,24 +230,29 @@ func (b *TModellingBusConnector) deletePosting(topicPath string) {
  */
 
 func (b *TModellingBusConnector) DeleteEnvironment(environment ...string) {
+	// Determine the environment to delete
 	environmentToDelete := b.environmentID
 	if len(environment) > 0 {
 		environmentToDelete = environment[0]
 	}
 
+	// Report on the deletion
 	b.Reporter.Progress(1, "Deleting environment: %s", environmentToDelete)
 
+	// Delete the environment both from the event bus and the repository
 	b.modellingBusEventsConnector.deleteEnvironment(environmentToDelete)
 	b.modellingBusRepositoryConnector.deleteEnvironment(environmentToDelete)
 }
 
 func CreateModellingBusConnector(configData *generics.TConfigData, reporter *generics.TReporter, postingOnly bool) TModellingBusConnector {
+	// Create the modelling bus connector
 	modellingBusConnector := TModellingBusConnector{}
 	modellingBusConnector.environmentID = configData.GetValue("", "environment").String()
 	modellingBusConnector.agentID = configData.GetValue("", "agent").String()
 	modellingBusConnector.configData = configData
 	modellingBusConnector.Reporter = reporter
 
+	// Create the repository connector
 	modellingBusConnector.modellingBusRepositoryConnector =
 		createModellingBusRepositoryConnector(
 			modellingBusConnector.environmentID,
@@ -247,6 +260,7 @@ func CreateModellingBusConnector(configData *generics.TConfigData, reporter *gen
 			modellingBusConnector.configData,
 			modellingBusConnector.Reporter)
 
+	// Create the events connector
 	modellingBusConnector.modellingBusEventsConnector =
 		createModellingBusEventsConnector(
 			modellingBusConnector.environmentID,
@@ -255,5 +269,6 @@ func CreateModellingBusConnector(configData *generics.TConfigData, reporter *gen
 			modellingBusConnector.Reporter,
 			postingOnly)
 
+	// Return the created modelling bus connector
 	return modellingBusConnector
 }
