@@ -116,13 +116,9 @@ func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, ol
 
 	// Convert the delta to JSON
 	deltaJSON, err := json.Marshal(delta)
-	if err != nil {
-		b.ModellingBusConnector.Reporter.Error("Something went wrong JSONing the diff patch. %s", err)
-		return
-	}
 
-	// Post the delta JSON
-	b.ModellingBusConnector.postJSONAsFile(deltaTopicPath, deltaJSON, delta.Timestamp)
+	// Post the delta JSON, if no error occurred during marshalling
+	b.ModellingBusConnector.maybePostJSONAsFile(deltaTopicPath, deltaJSON, delta.Timestamp, "Something went wrong JSONing the diff patch. %s", err)
 }
 
 // Applying a JSON delta to a given current JSON state

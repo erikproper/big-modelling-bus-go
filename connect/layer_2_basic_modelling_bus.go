@@ -64,7 +64,7 @@ func (b *TModellingBusConnector) postFile(topicPath, localFilePath, timestamp st
 	// Then convert the event to JSON
 	message, err := json.Marshal(event)
 
-	// Handle post event, if no error occurred during marshalling
+	// Post the event, if no error occurred during marshalling
 	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
 }
 
@@ -76,10 +76,21 @@ func (b *TModellingBusConnector) postJSONAsFile(topicPath string, jsonMessage []
 	// Then convert the event to JSON
 	message, err := json.Marshal(event)
 
-	// Handle post event, if no error occurred during marshalling
+	// Post the event, if no error occurred during marshalling
 	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
 }
 
+func (b *TModellingBusConnector) maybePostJSONAsFile(topicPath string, jsonMessage []byte, timestamp, errorMessage string, err error) {
+	// Handle potential errors
+	if b.Reporter.MaybeReportError(errorMessage, err) {
+		return
+	}
+
+	// Post JSON as a file
+	b.postJSONAsFile(topicPath, jsonMessage, timestamp)
+}
+
+// Posting a JSON message as a streamed event on the event bus
 func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessage []byte, timestamp string) {
 	// Create the streamed event
 	event := tStreamedEvent{}
@@ -89,7 +100,7 @@ func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessag
 	// Convert the event to JSON
 	message, err := json.Marshal(event)
 
-	// Handle post event, if no error occurred during marshalling
+	// Post the event, if no error occurred during marshalling
 	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
 }
 
