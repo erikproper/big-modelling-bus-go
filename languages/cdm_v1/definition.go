@@ -40,7 +40,7 @@ type (
 
 	TCDMModel struct {
 		// For reporting errors
-		reporter generics.TErrorReporter // The error reporter to be used
+		reporter generics.TReporter // The error reporter to be used
 
 		// General properties for the model
 		ModelName                  string                                 `json:"model name"` // The name of the model
