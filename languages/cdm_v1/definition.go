@@ -340,3 +340,12 @@ func (p *tCDMModelPoster) PostUpdate(m tCDMModel) {
 func (p *tCDMModelPoster) PostConsidering(m tCDMModel) {
 	p.modelPoster.PostJSONArtefactConsidering(json.Marshal(m))
 }
+
+func NNCreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string) tCDMModelPoster {
+	// Setting up the ModelPoster
+	CDMPosterModel.modelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
+	CDMPosterModel.modelPoster.PrepareForPosting(modelID)
+
+	// Return the created model poster
+	return CDMPosterModel
+}
