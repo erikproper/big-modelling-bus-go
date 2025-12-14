@@ -2,6 +2,7 @@
  *
  * Module:    BIG Modelling Bus
  * Package:   Languages/Conceptual Domain Modelling, Version 1
+ * Component: Definition
  *
  * This package implements the Conceptual Domain Modelling language, version 1, for the BIG Modelling Bus.
  *
@@ -33,7 +34,7 @@ const (
  */
 
 type (
-	tRelationReading struct {
+	TRelationReading struct {
 		InvolvementTypes []string `json:"involvement types"` // The involvement types used in the relation type readings
 		ReadingElements  []string `json:"reading elements"`  // The strings used in relation type reading
 	}
@@ -43,7 +44,6 @@ type (
 		reporter *generics.TReporter // The Reporter to be used to report progress, errors, and panics
 
 		// For posting of, and listening to, model updates on the modelling bus
-		ModelPoster   connect.TModellingBusArtefactConnector `json:"-"` // The Modelling Bus Artefact Poster used to post updates of the model
 		ModelListener connect.TModellingBusArtefactConnector `json:"-"` // The Modelling Bus Artefact Poster used to listen for updates of the model
 
 		// General properties for the model
@@ -70,13 +70,7 @@ type (
 		InvolvementTypesOfRelationType    map[string]map[string]bool  `json:"involvement types of relation types"`    // The involvement types of each relation type
 		AlternativeReadingsOfRelationType map[string]map[string]bool  `json:"alternative readings of relation types"` // The alternative readings of each relation type
 		PrimaryReadingOfRelationType      map[string]string           `json:"primary readings of relation types"`     // The primary reading of each relation type
-		ReadingDefinition                 map[string]tRelationReading `json:"reading definition"`                     // The definition of each relation type reading
-	}
-
-	TCDMModelPoster struct {
-		// ....
-		//		reporter    *generics.TReporter                    // The Reporter to be used to report progress, errors, and panics
-		modelPoster connect.TModellingBusArtefactConnector // ???
+		ReadingDefinition                 map[string]TRelationReading `json:"reading definition"`                     // The definition of each relation type reading
 	}
 )
 
@@ -101,7 +95,7 @@ func (m *TCDMModel) Clean() {
 	m.InvolvementTypesOfRelationType = map[string]map[string]bool{}
 	m.AlternativeReadingsOfRelationType = map[string]map[string]bool{}
 	m.PrimaryReadingOfRelationType = map[string]string{}
-	m.ReadingDefinition = map[string]tRelationReading{}
+	m.ReadingDefinition = map[string]TRelationReading{}
 }
 
 // Generating a new element ID
@@ -175,7 +169,7 @@ func (m *TCDMModel) AddRelationType(name string, involvementTypes ...string) str
 // Adding a relation type reading
 func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolvementTypes ...string) string {
 	// Creating the relation type reading
-	reading := tRelationReading{}
+	reading := TRelationReading{}
 
 	// Splitting the strings and involvement types
 	// These should be given in an alternating manner
@@ -231,40 +225,6 @@ func CreateCDMModel(reporter *generics.TReporter) TCDMModel {
 
 	// Return the created model
 	return CDMModel
-}
-
-/*
- *
- * Create XXXXXXXX models that will be posted to the modelling bus
- *
- */
-
-// Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
-func OOCreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string, reporter *generics.TReporter) TCDMModel {
-	// Creating the CDM model poster
-	CDMPosterModel := CreateCDMModel(reporter)
-
-	// Setting up the ModelPoster
-	CDMPosterModel.ModelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, modelID)
-	//	CDMPosterModel.ModelPoster.PrepareForPosting(modelID)
-
-	// Return the created model poster
-	return CDMPosterModel
-}
-
-// Posting the model's state
-func (m *TCDMModel) PostState() {
-	m.ModelPoster.PostJSONArtefactState(json.Marshal(m))
-}
-
-// Posting the model's update
-func (m *TCDMModel) PostUpdate() {
-	m.ModelPoster.PostJSONArtefactUpdate(json.Marshal(m))
-}
-
-// Posting the model's considered update
-func (m *TCDMModel) PostConsidering() {
-	m.ModelPoster.PostJSONArtefactConsidering(json.Marshal(m))
 }
 
 /*
@@ -325,28 +285,3 @@ func (m *TCDMModel) GetConsideredFromBus(artefactBus connect.TModellingBusArtefa
 ////
 ////
 ////
-
-// Posting the model's state
-func (p *TCDMModelPoster) PostState(m TCDMModel) {
-	p.modelPoster.PostJSONArtefactState(json.Marshal(m))
-}
-
-// Posting the model's update
-func (p *TCDMModelPoster) PostUpdate(m TCDMModel) {
-	p.modelPoster.PostJSONArtefactUpdate(json.Marshal(m))
-}
-
-// Posting the model's considered update
-func (p *TCDMModelPoster) PostConsidering(m TCDMModel) {
-	p.modelPoster.PostJSONArtefactConsidering(json.Marshal(m))
-}
-
-// Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
-func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string) TCDMModelPoster {
-	// Setting up new CDM model poster
-	CDMPosterModel := TCDMModelPoster{}
-	CDMPosterModel.modelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, modelID)
-
-	// Return the created CDM model poster
-	return CDMPosterModel
-}
