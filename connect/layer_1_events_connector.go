@@ -345,6 +345,7 @@ func createModellingBusEventsConnector(environmentID, agentID string, configData
  *
  */
 
+// Defining constants
 const (
 	// When creating an events connector only for posting, then use this constant to set this to true
 	// In this case, the connector will not collect existing messages from the bus

@@ -20,6 +20,7 @@ import (
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
+// Defining constants
 const (
 	jsonArtefactsPathElement = "artefacts/json" // JSON artefacts path element
 	rawArtefactsPathElement  = "artefacts/raw"  // Raw artefacts path element
@@ -137,7 +138,7 @@ func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.Ra
 	newJSONState, err := generics.JSONApplyPatch(currentJSONState, delta.Operations)
 
 	// Handle potential errors
-	if b.ModellingBusConnector.Reporter.MaybeReportError("Applying patch didn't work", err) {
+	if b.ModellingBusConnector.Reporter.MaybeReportError("Applying the dif patch did not work.", err) {
 		return currentJSONState, false
 	}
 

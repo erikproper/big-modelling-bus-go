@@ -193,6 +193,7 @@ func deleteRepositoryPath(client *goftp.Client, deletePath string) {
 	}
 }
 
+// Delete a given path from the repository
 func (r *tModellingBusRepositoryConnector) deletePath(deletePath string) {
 	// Connect to the FTP server
 	if client, ok := r.ftpConnect(); ok {
@@ -201,16 +202,19 @@ func (r *tModellingBusRepositoryConnector) deletePath(deletePath string) {
 	}
 }
 
+// Delete the posting path for the given topic path
 func (r *tModellingBusRepositoryConnector) deletePostingPath(topicPath string) {
 	// Delete the path from the FTP server for the given topic path
 	r.deletePath(r.ftpTopicPath(topicPath))
 }
 
+// Delete an entire environment from the repository
 func (r *tModellingBusRepositoryConnector) deleteEnvironment(environment string) {
 	// Delete the entere file tree from the FTP server for the given environment
 	r.deletePath(r.ftpEnvironmentTopicRootFor(environment))
 }
 
+// Add JSON content as a file to the repository
 func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json []byte, timestamp string) tRepositoryEvent {
 	// Define the temporary local file path
 	localFilePath := r.localFilePathFor(generics.JSONFileName)
@@ -228,6 +232,7 @@ func (r *tModellingBusRepositoryConnector) addJSONAsFile(topicPath string, json 
 	return r.addFile(topicPath, localFilePath, timestamp)
 }
 
+// Get a file from the repository
 func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEvent, fileName string) string {
 	// Configure FTP connection
 	config := goftp.Config{}
@@ -275,6 +280,7 @@ func (r *tModellingBusRepositoryConnector) getFile(repositoryEvent tRepositoryEv
 	return localFileName
 }
 
+// Create the modelling bus repository connector
 func createModellingBusRepositoryConnector(environmentID, agentID string, configData *generics.TConfigData, reporter *generics.TReporter) *tModellingBusRepositoryConnector {
 	// Create the repository connector
 	r := tModellingBusRepositoryConnector{}

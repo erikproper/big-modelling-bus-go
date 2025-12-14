@@ -56,7 +56,7 @@ type (
  * Posting things
  */
 
-// Posting a file to the repository and announcing it on the event bus
+// Posting a file to the repository and announcing it on the modelling bus
 func (b *TModellingBusConnector) postFile(topicPath, localFilePath, timestamp string) {
 	// First, add the file to the repository
 	event := b.modellingBusRepositoryConnector.addFile(topicPath, localFilePath, timestamp)
@@ -68,7 +68,7 @@ func (b *TModellingBusConnector) postFile(topicPath, localFilePath, timestamp st
 	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
 }
 
-// Posting a JSON message as a file to the repository and announcing it on the event bus
+// Posting a JSON message as a file to the repository and announcing it on the modelling bus
 func (b *TModellingBusConnector) postJSONAsFile(topicPath string, jsonMessage []byte, timestamp string) {
 	// First, add the JSON as a file to the repository
 	event := b.modellingBusRepositoryConnector.addJSONAsFile(topicPath, jsonMessage, timestamp)
@@ -80,6 +80,7 @@ func (b *TModellingBusConnector) postJSONAsFile(topicPath string, jsonMessage []
 	b.modellingBusEventsConnector.maybePostEvent(topicPath, message, "Something went wrong JSONing the file link data.", err)
 }
 
+// Posting a JSON message as a file to the modelling bus
 func (b *TModellingBusConnector) maybePostJSONAsFile(topicPath string, jsonMessage []byte, timestamp, errorMessage string, err error) {
 	// Handle potential errors
 	if b.Reporter.MaybeReportError(errorMessage, err) {
@@ -90,7 +91,7 @@ func (b *TModellingBusConnector) maybePostJSONAsFile(topicPath string, jsonMessa
 	b.postJSONAsFile(topicPath, jsonMessage, timestamp)
 }
 
-// Posting a JSON message as a streamed event on the event bus
+// Posting a JSON message as a streamed event on the modelling bus
 func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessage []byte, timestamp string) {
 	// Create the streamed event
 	event := tStreamedEvent{}
@@ -108,7 +109,7 @@ func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessag
  * Retrieving things
  */
 
-// Get a linked file from the repository, given the message from the event bus
+// Get a linked file from the repository, given the message from the modelling bus
 func (b *TModellingBusConnector) getLinkedFileFromRepository(message []byte, localFileName string) (string, string) {
 	// Unmarshal the message to get the repository event
 	event := tRepositoryEvent{}
@@ -122,9 +123,9 @@ func (b *TModellingBusConnector) getLinkedFileFromRepository(message []byte, loc
 	return b.modellingBusRepositoryConnector.getFile(event, localFileName), event.Timestamp
 }
 
-// Get a linked file from a posting on the event bus
+// Get a linked file from a posting on the modelling bus
 func (b *TModellingBusConnector) getFileFromPosting(agentID, topicPath, localFileName string) (string, string) {
-	// Get the message from the event bus, and retrieve the file from the repository
+	// Get the message from the modelling bus, and retrieve the file from the repository
 	return b.getLinkedFileFromRepository(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath), localFileName)
 }
 
@@ -136,7 +137,7 @@ func (b *TModellingBusConnector) getJSONFromTemporaryFile(tempFilePath, timestam
 
 	// Handle potential errors
 	if err != nil {
-		b.Reporter.ReportError("Something went wrong while retrieving file.", err)
+		b.Reporter.ReportError("Something went wrong while retrieving the file.", err)
 		b.Reporter.Error("Temporary file to be opened: %s", tempFilePath)
 		return []byte{}, ""
 	}
@@ -145,7 +146,7 @@ func (b *TModellingBusConnector) getJSONFromTemporaryFile(tempFilePath, timestam
 	return jsonPayload, timestamp
 }
 
-// Get JSON from the repository, given a posting on the event bus
+// Get JSON from the repository, given a posting on the modelling bus
 func (b *TModellingBusConnector) getJSON(agentID, topicPath string) ([]byte, string) {
 	// Get the linked file from the repository
 	tempFilePath, timestamp := b.getLinkedFileFromRepository(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath), generics.JSONFileName)
@@ -178,7 +179,7 @@ func (b *TModellingBusConnector) splitStreamedEventFromMessage(message []byte) (
 	return event.Payload, event.Timestamp
 }
 
-// Get the message from the event bus
+// Get the message from the modelling bus
 func (b *TModellingBusConnector) getStreamedEvent(agentID, topicPath string) ([]byte, string) {
 	return b.splitStreamedEventFromMessage(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath))
 }
@@ -188,21 +189,21 @@ func (b *TModellingBusConnector) getStreamedEvent(agentID, topicPath string) ([]
  */
 
 func (b *TModellingBusConnector) listenForFilePostings(agentID, topicPath, localFileName string, postingHandler func(string, string)) {
-	// Listen for raw file related events on the event bus
+	// Listen for raw file related events on the modelling bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
 		postingHandler(b.getLinkedFileFromRepository(message, localFileName))
 	})
 }
 
 func (b *TModellingBusConnector) listenForJSONFilePostings(agentID, topicPath string, postingHandler func([]byte, string)) {
-	// Listen for JSON file related events on the event bus
+	// Listen for JSON file related events on the modelling bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
 		postingHandler(b.getJSONFromTemporaryFile(b.getLinkedFileFromRepository(message, generics.JSONFileName)))
 	})
 }
 
 func (b *TModellingBusConnector) listenForStreamedPostings(agentID, topicPath string, postingHandler func([]byte, string)) {
-	// Listen for streamed events on the event bus
+	// Listen for streamed events on the modelling bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
 		postingHandler(b.splitStreamedEventFromMessage(message))
 	})
@@ -213,7 +214,7 @@ func (b *TModellingBusConnector) listenForStreamedPostings(agentID, topicPath st
  */
 
 func (b *TModellingBusConnector) deletePosting(topicPath string) {
-	// Delete the posting both from the event bus and the repository
+	// Delete the posting both from the modelling bus and the repository
 	b.modellingBusEventsConnector.deletePostingPath(topicPath)
 	b.modellingBusRepositoryConnector.deletePostingPath(topicPath)
 }
@@ -234,7 +235,7 @@ func (b *TModellingBusConnector) DeleteEnvironment(environment ...string) {
 	// Report on the deletion
 	b.Reporter.Progress(1, "Deleting environment: %s", environmentToDelete)
 
-	// Delete the environment both from the event bus and the repository
+	// Delete the environment both from the modelling bus and the repository
 	b.modellingBusEventsConnector.deleteEnvironment(environmentToDelete)
 	b.modellingBusRepositoryConnector.deleteEnvironment(environmentToDelete)
 }
