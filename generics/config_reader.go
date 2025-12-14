@@ -25,9 +25,14 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// Since we want to define some extra functions for config data, we need to "wrap" the two existing types as
-// defined by the "gopkg.in/ini.v1" package.
+/*
+ * Defining config data and config value types
+ */
+
 type (
+	// Since we want to define some extra functions for config data, we need to "wrap" the two existing types as
+	// defined by the "gopkg.in/ini.v1" package.
+
 	TConfigData struct {
 		configFile *ini.File // The ini file as read by the ini package
 	}
@@ -36,6 +41,10 @@ type (
 		configKey *ini.Key // The ini key as read by the ini package
 	}
 )
+
+/*
+ * Loading configguration files
+ */
 
 // Load the configuration file.
 func LoadConfig(filePath string, reporter *TReporter) *TConfigData {
@@ -53,6 +62,10 @@ func LoadConfig(filePath string, reporter *TReporter) *TConfigData {
 
 	return &configData
 }
+
+/*
+ * Retrieving config values
+ */
 
 // Get the value from a given section and key from the read config data
 func (c *TConfigData) GetValue(section, key string) *TConfigValue {

@@ -14,6 +14,10 @@
 
 package generics
 
+/*
+ * Defining key global constants
+ */
+
 const (
 	ModellingBusVersion = "bus-version-1.0" // The current version of the BIG modelling bus.
 	PayloadFileName     = "payload"         // Name of the file used to store the "payload" of artefacts on the FTP server.

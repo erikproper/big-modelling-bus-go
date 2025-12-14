@@ -25,6 +25,7 @@ import (
 	"github.com/wI2L/jsondiff"
 )
 
+// JSONDiff computes the difference between two JSONs and returns it as a JSON Patch.
 func JSONDiff(sourceJSON, targetJSON []byte) (json.RawMessage, error) {
 	deltaOperations, err := jsondiff.CompareJSON(sourceJSON, targetJSON)
 	if err != nil {
@@ -34,6 +35,7 @@ func JSONDiff(sourceJSON, targetJSON []byte) (json.RawMessage, error) {
 	return json.Marshal(deltaOperations)
 }
 
+// JSONApplyPatch applies a JSON Patch to a source JSON and returns the resulting JSON.
 func JSONApplyPatch(sourceJSON, patchJSON []byte) (json.RawMessage, error) {
 	patch, err := jsonpatch.DecodePatch(patchJSON)
 	if err != nil {
