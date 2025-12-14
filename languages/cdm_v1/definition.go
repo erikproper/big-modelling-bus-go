@@ -39,10 +39,13 @@ type (
 	}
 
 	TCDMModel struct {
+		// For reporting errors
+		reporter generics.TErrorReporter // The error reporter to be used
+
+		// General properties for the model
 		ModelName                  string                                 `json:"model name"` // The name of the model
 		ModellingBusArtefactPoster connect.TModellingBusArtefactConnector `json:"-"`          // The Modelling Bus Artefact Poster used to post the model
-		//		TypeIDCount                int                                    `json:"-"`          // The counter for type IDs
-		InstanceIDCount int `json:"-"` // The counter for instance IDs
+		InstanceIDCount            int                                    `json:"-"`          // The counter for instance IDs
 
 		// For types
 		TypeName map[string]string `json:"type names"` // The names of the types, by their IDs
@@ -94,58 +97,90 @@ func (m *TCDMModel) Clean() {
 
 // Generating a new element ID
 func (m *TCDMModel) NewElementID() string {
+	// Generating a new element ID based on timestamps
 	return generics.GetTimestamp()
 }
 
+// Setting the model name
 func (m *TCDMModel) SetModelName(name string) {
+	// Setting the model name
 	m.ModelName = name
 }
 
+// Adding a concrete individual type
 func (m *TCDMModel) AddConcreteIndividualType(name string) string {
+	// Settings things up for a new concrete individual type
 	id := m.NewElementID()
 	m.ConcreteIndividualTypes[id] = true
 	m.TypeName[id] = name
 
+	// Return the new type ID
 	return id
 }
 
+// Adding a quality type
 func (m *TCDMModel) AddQualityType(name, domain string) string {
+	// Settings things up for a new quality type
 	id := m.NewElementID()
 	m.QualityTypes[id] = true
 	m.TypeName[id] = name
 	m.DomainOfQualityType[id] = domain
 
+	// Return the new type ID
 	return id
 }
 
+// Adding an involvement type
 func (m *TCDMModel) AddInvolvementType(name string, base string) string {
+	// Settings things up for a new involvement type
 	id := m.NewElementID()
 	m.InvolvementTypes[id] = true
 	m.TypeName[id] = name
 	m.BaseTypeOfInvolvementType[id] = base
 
+	// Return the new type ID
 	return id
 }
 
+// Adding a relation type
 func (m *TCDMModel) AddRelationType(name string, involvementTypes ...string) string {
+	// Settings things up for a new relation type
 	id := m.NewElementID()
 	m.RelationTypes[id] = true
 	m.TypeName[id] = name
 
+	// Setting up the involvement types of this relation type
 	m.InvolvementTypesOfRelationType[id] = map[string]bool{}
 	for _, involvementType := range involvementTypes {
 		m.RelationTypeOfInvolvementType[involvementType] = id
 		m.InvolvementTypesOfRelationType[id][involvementType] = true
 	}
 
+	// Setting up the alternative readings of this relation type
 	m.AlternativeReadingsOfRelationType[id] = map[string]bool{}
 
+	// Return the new type ID
 	return id
 }
 
+// Adding a relation type reading
 func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolvementTypes ...string) string {
+	// Creating the relation type reading
 	reading := TRelationReading{}
 
+	// Splitting the strings and involvement types
+	// These should be given in an alternating manner
+	// For an n-ary relation type, we should have:
+	//    s_1, ..., s_{n+1} strings
+	// that are part of the reading, and
+	//    i_1, ..., i_n strings
+	// referring to involvement types, which should be ordered as:
+	//    s_1, i_1, s_2, i_2, ..., i_n, s_{n+1}
+	//
+	// Note: Technically, this function should require a check to see if all InvolvementTypesss of the relation
+	// have been used ... and used only once
+	// But ... as this is only "Hello World" for now, so we won't do so yet.
+	//
 	isReadingString := true
 	for _, element := range stringsAndInvolvementTypes {
 		if isReadingString {
@@ -156,17 +191,18 @@ func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolv
 		isReadingString = !isReadingString
 	}
 
+	// Adding the reading to the model
 	readingID := m.NewElementID()
 	m.AlternativeReadingsOfRelationType[relationType][readingID] = true
 	m.ReadingDefinition[readingID] = reading
 
+	// If this is the first reading for the relation type, then we will make it to be the primary reading
 	if m.PrimaryReadingOfRelationType[relationType] == "" {
 		m.PrimaryReadingOfRelationType[relationType] = readingID
 	}
 
+	// Return this reaading's Reading ID
 	return readingID
-	// Does require a check to see if all InvolvementTypesss of the relation have been used ... and used only once
-	// But ... as this is only "Hello World" for now, so we won't do so yet.
 }
 
 /*
@@ -175,59 +211,77 @@ func (m *TCDMModel) AddRelationTypeReading(relationType string, stringsAndInvolv
  *
  */
 
-func CreateCDMModel() TCDMModel {
+// Creating a new CDM model
+func CreateCDMModel(reporter generics.TErrorReporter) TCDMModel {
+	// Creating the model
 	CDMModel := TCDMModel{}
 	CDMModel.Clean()
 
+	// Setting up the reporter
+	CDMModel.reporter = reporter
+
+	// Return the created model
 	return CDMModel
 }
 
 /*
  *
- * Posting models to the artefactBus
+ * Create models that will be posted to the modelling bus
  *
  */
 
-func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string) TCDMModel {
-	CDMPosterModel := CreateCDMModel()
+// Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
+func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string, reporter generics.TErrorReporter) TCDMModel {
+	// Creating the CDM model poster
+	CDMPosterModel := CreateCDMModel(reporter)
 
-	// Note: One ModellingBusConnector can be used for different artefacts with different json versions.
+	// Setting up the ModellingBusArtefactPoster
 	CDMPosterModel.ModellingBusArtefactPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 	CDMPosterModel.ModellingBusArtefactPoster.PrepareForPosting(modelID)
 
+	// Return the created model poster
 	return CDMPosterModel
 }
 
+// Posting the model's state
 func (m *TCDMModel) PostState() {
 	m.ModellingBusArtefactPoster.PostJSONArtefactState(json.Marshal(m))
 }
 
+// Posting the model's update
 func (m *TCDMModel) PostUpdate() {
 	m.ModellingBusArtefactPoster.PostJSONArtefactUpdate(json.Marshal(m))
 }
 
+// Posting the model's considered update
 func (m *TCDMModel) PostConsidering() {
 	m.ModellingBusArtefactPoster.PostJSONArtefactConsidering(json.Marshal(m))
 }
 
 /*
  *
- * Reading models from the artefactBus
+ * Create models that will retrieved from the modelling bus
  *
  */
 
-// Note: One ModellingBusConnector can be used for different models of different kinds.
-func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector) connect.TModellingBusArtefactConnector {
+// Creating a CDM model listener, which uses a given ModellingBusConnector to listen for models and their updates
+func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter generics.TErrorReporter) TCDMModel {
+	// Creating the CDM model listener
+	CDMListenerModel := CreateCDMModel(reporter)
+
+	// Creating the CDM model listener
 	ModellingBusCDMModelListener := connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 
-	return ModellingBusCDMModelListener
+	// Return the created model listener
+	return CDMListenerModel
 }
 
+// Retrieving the model's state
 func (m *TCDMModel) GetStateFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
+	// Cleaning the present copy of the model
 	m.Clean()
-	err := json.Unmarshal(artefactBus.CurrentContent, m)
 
-	return err == nil
+	return m.reporter.MaybeReportError("Unmarshalling state content failed.", json.Unmarshal(artefactBus.StateContent, m))
 }
 
 func (m *TCDMModel) GetUpdatedFromBus(artefactBus connect.TModellingBusArtefactConnector) bool {
