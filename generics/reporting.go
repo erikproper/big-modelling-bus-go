@@ -19,11 +19,19 @@ import (
 	"fmt"
 )
 
+/*
+ * Defining reporting levels
+ */
+
 const (
 	ProgressLevelBasic    = 1
 	ProgressLevelDetailed = 2
 	ProgressLevelNoisy    = 3
 )
+
+/*
+ * Defining reporter types
+ */
 
 type (
 	TErrorReporter    func(string)
@@ -36,14 +44,21 @@ type (
 	}
 )
 
+/*
+ * Defining reporter functionality
+ */
+
+// Reporting an error
 func (r *TReporter) Error(message string, context ...any) {
 	r.errorReporter(fmt.Sprintf(message, context...))
 }
 
+// Reporting an error with an error value
 func (r *TReporter) ReportError(message string, err error) {
 	r.Error(message+" %s", err)
 }
 
+// Reporting an error if the error value is not nil
 func (r *TReporter) MaybeReportError(message string, err error) bool {
 	if err != nil {
 		r.Error(message, err)
@@ -54,24 +69,28 @@ func (r *TReporter) MaybeReportError(message string, err error) bool {
 	return true
 }
 
+// Panicking with an error message
 func (r *TReporter) Panic(message string, context ...any) {
 	r.Error(message+" Panicking.", context...)
 
 	panic("")
 }
 
+// Panicking with an error message and an error value
 func (r *TReporter) PanicError(message string, err error) {
 	r.Panic(message+" %s", err)
 
 	panic("")
 }
 
+// Reporting progress
 func (r *TReporter) Progress(level int, message string, context ...any) {
 	if level <= r.reportingLevel {
 		r.progressReporter(fmt.Sprintf(message, context...))
 	}
 }
 
+// Creating a new reporter
 func CreateReporter(level int, errorReporter TErrorReporter, progressReporter TProgressReporter) *TReporter {
 	reporter := TReporter{}
 

@@ -3,7 +3,7 @@
  * Module:    BIG Modelling Bus
  * Package:   Languages/Conceptual Domain Modelling, Version 1
  *
- * ..... ... .. .
+ * This package implements the Conceptual Domain Modelling language, version 1, for the BIG Modelling Bus.
  *
  * Creator: Henderik A. Proper (e.proper@acm.org), TU Wien, Austria
  *
@@ -20,53 +20,68 @@ import (
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
 
+/*
+ * Defining key constants
+ */
+
 const (
 	ModelJSONVersion = "cdm-1.0-1.0"
 )
 
+/*
+ * Defining the CDM model structure, including the JSON structure
+ */
+
 type (
 	TRelationReading struct {
-		InvolvementTypes []string `json:"involvement types"`
-		ReadingElements  []string `json:"reading elements"`
+		InvolvementTypes []string `json:"involvement types"` // The involvement types used in the relation type readings
+		ReadingElements  []string `json:"reading elements"`  // The strings used in relation type reading
 	}
 
 	TCDMModel struct {
-		ModelName                  string                                 `json:"model name"`
-		ModellingBusArtefactPoster connect.TModellingBusArtefactConnector `json:"-"`
-		TypeIDCount                int                                    `json:"-"`
-		InstanceIDCount            int                                    `json:"-"`
+		ModelName                  string                                 `json:"model name"` // The name of the model
+		ModellingBusArtefactPoster connect.TModellingBusArtefactConnector `json:"-"`          // The Modelling Bus Artefact Poster used to post the model
+		//		TypeIDCount                int                                    `json:"-"`          // The counter for type IDs
+		InstanceIDCount int `json:"-"` // The counter for instance IDs
 
 		// For types
-		TypeName map[string]string `json:"type names"`
+		TypeName map[string]string `json:"type names"` // The names of the types, by their IDs
 
 		// For concrete individual types
-		ConcreteIndividualTypes map[string]bool `json:"concrete individual types"`
+		ConcreteIndividualTypes map[string]bool `json:"concrete individual types"` // The concrete individual types
 
 		// For quality types
-		QualityTypes        map[string]bool   `json:"quality types"`
-		DomainOfQualityType map[string]string `json:"domains of quality types"`
+		QualityTypes        map[string]bool   `json:"quality types"`            // The quality types
+		DomainOfQualityType map[string]string `json:"domains of quality types"` // The domain of each quality type
 
 		// For involvement types
-		InvolvementTypes              map[string]bool   `json:"involvement types"`
-		BaseTypeOfInvolvementType     map[string]string `json:"base types of involvement types"`
-		RelationTypeOfInvolvementType map[string]string `json:"relation types of involvement types"`
+		InvolvementTypes              map[string]bool   `json:"involvement types"`                   // The involvement types
+		BaseTypeOfInvolvementType     map[string]string `json:"base types of involvement types"`     // The base type of each involvement type
+		RelationTypeOfInvolvementType map[string]string `json:"relation types of involvement types"` // The relation type of each involvement type
 
 		// For relation types
-		RelationTypes                     map[string]bool             `json:"relation types"`
-		InvolvementTypesOfRelationType    map[string]map[string]bool  `json:"involvement types of relation types"`
-		AlternativeReadingsOfRelationType map[string]map[string]bool  `json:"alternative readings of relation types"`
-		PrimaryReadingOfRelationType      map[string]string           `json:"primary readings of relation types"`
-		ReadingDefinition                 map[string]TRelationReading `json:"reading definition"`
+		RelationTypes                     map[string]bool             `json:"relation types"`                         // The relation types
+		InvolvementTypesOfRelationType    map[string]map[string]bool  `json:"involvement types of relation types"`    // The involvement types of each relation type
+		AlternativeReadingsOfRelationType map[string]map[string]bool  `json:"alternative readings of relation types"` // The alternative readings of each relation type
+		PrimaryReadingOfRelationType      map[string]string           `json:"primary readings of relation types"`     // The primary reading of each relation type
+		ReadingDefinition                 map[string]TRelationReading `json:"reading definition"`                     // The definition of each relation type reading
 	}
 )
 
+/*
+ *
+ * Functionality related to the CDM model
+ *
+ */
+
+// Cleaning the model
 func (m *TCDMModel) Clean() {
+	// Resetting all fields
 	m.ModelName = ""
 	m.ConcreteIndividualTypes = map[string]bool{}
 	m.QualityTypes = map[string]bool{}
 	m.RelationTypes = map[string]bool{}
 	m.InvolvementTypes = map[string]bool{}
-
 	m.TypeName = map[string]string{}
 	m.DomainOfQualityType = map[string]string{}
 	m.BaseTypeOfInvolvementType = map[string]string{}
@@ -77,6 +92,7 @@ func (m *TCDMModel) Clean() {
 	m.ReadingDefinition = map[string]TRelationReading{}
 }
 
+// Generating a new element ID
 func (m *TCDMModel) NewElementID() string {
 	return generics.GetTimestamp()
 }
