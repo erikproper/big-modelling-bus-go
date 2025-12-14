@@ -56,7 +56,7 @@ func (b *TModellingBusConnector) ListenForCoordinationPostings(agentID, coordina
  */
 
 func (b *TModellingBusConnector) GetCoordination(agentID, coordinationID string) ([]byte, string) {
-	return b.getStreamed(agentID, b.coordinationTopicPath(coordinationID))
+	return b.getStreamedEvent(agentID, b.coordinationTopicPath(coordinationID))
 }
 
 /*

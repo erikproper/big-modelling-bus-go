@@ -113,13 +113,13 @@ func (b *TModellingBusConnector) getLinkedFileFromRepository(message []byte, loc
 	// Unmarshal the message to get the repository event
 	event := tRepositoryEvent{}
 	err := json.Unmarshal(message, &event)
-	if err == nil {
-		// Retrieve the file from the repository
-		return b.modellingBusRepositoryConnector.getFile(event, localFileName), event.Timestamp
-	} else {
-		// Something went wrong, so return an empty result
+
+	// Handle potential errors
+	if b.Reporter.MaybeReportError("Something went wrong unmarshalling the repository event.", err) {
 		return "", ""
 	}
+
+	return b.modellingBusRepositoryConnector.getFile(event, localFileName), event.Timestamp
 }
 
 // Get a linked file from a posting on the event bus
@@ -163,20 +163,24 @@ func (b *TModellingBusConnector) getJSON(agentID, topicPath string) ([]byte, str
 	return jsonPayload, timestamp
 }
 
-func (b *TModellingBusConnector) getStreamed(agentID, topicPath string) ([]byte, string) {
-	// Get the message from the event bus
-	event := tStreamedEvent{}
-	message := b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath)
-
+// Split a streamed event from the message into Payload and Timestamp
+func (b *TModellingBusConnector) splitStreamedEventFromMessage(message []byte) ([]byte, string) {
 	// Unmarshal the message
+	event := tStreamedEvent{}
 	err := json.Unmarshal(message, &event)
-	if err == nil {
-		// Return the payload and timestamp
-		return event.Payload, event.Timestamp
-	} else {
-		// Something went wrong, so return an empty result
+
+	// Handle potential errors
+	if b.Reporter.MaybeReportError("Something went wrong unmarshalling the streamed event.", err) {
 		return []byte{}, ""
 	}
+
+	// Return the payload and timestamp
+	return event.Payload, event.Timestamp
+}
+
+// Get the message from the event bus
+func (b *TModellingBusConnector) getStreamedEvent(agentID, topicPath string) ([]byte, string) {
+	return b.splitStreamedEventFromMessage(b.modellingBusEventsConnector.messageFromEvent(agentID, topicPath))
 }
 
 /*
@@ -200,13 +204,7 @@ func (b *TModellingBusConnector) listenForJSONFilePostings(agentID, topicPath st
 func (b *TModellingBusConnector) listenForStreamedPostings(agentID, topicPath string, postingHandler func([]byte, string)) {
 	// Listen for streamed events on the event bus
 	b.modellingBusEventsConnector.listenForEvents(agentID, topicPath, func(message []byte) {
-		// Unmarshal the streamed event
-		event := tStreamedEvent{}
-		err := json.Unmarshal(message, &event)
-		if err == nil {
-			// Call the posting handler with the payload and timestamp, of the unmashalling went well.
-			postingHandler(event.Payload, event.Timestamp)
-		}
+		postingHandler(b.splitStreamedEventFromMessage(message))
 	})
 }
 

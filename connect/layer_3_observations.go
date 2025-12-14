@@ -98,7 +98,7 @@ func (b *TModellingBusConnector) GetJSONObservation(agentID, observationID strin
 }
 
 func (b *TModellingBusConnector) GetStreamedObservation(agentID, observationID string) ([]byte, string) {
-	return b.getStreamed(agentID, b.streamedObservationsTopicPath(observationID))
+	return b.getStreamedEvent(agentID, b.streamedObservationsTopicPath(observationID))
 }
 
 /*
