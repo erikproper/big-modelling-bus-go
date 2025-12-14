@@ -200,10 +200,10 @@ func (b *TModellingBusArtefactConnector) checkArtefactJSONIssue(err error) bool 
  */
 
 // Preparing for posting artefacts
-func (b *TModellingBusArtefactConnector) PrepareForPosting(ArtefactID string) {
-	// Set the artefact ID
-	b.ArtefactID = ArtefactID
-}
+//func (b *TModellingBusArtefactConnector) PrepareForPosting(ArtefactID string) {
+//	// Set the artefact ID
+//	b.ArtefactID = ArtefactID
+//}
 
 // Posting raw artefact state
 func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFilePath string) {
@@ -362,11 +362,12 @@ func (b *TModellingBusArtefactConnector) DeleteJSONArtefact(artefactID string) {
  */
 
 // Creating a modelling bus artefact connector
-func CreateModellingBusArtefactConnector(ModellingBusConnector TModellingBusConnector, JSONVersion string) TModellingBusArtefactConnector {
+func CreateModellingBusArtefactConnector(ModellingBusConnector TModellingBusConnector, JSONVersion, ArtefactID string) TModellingBusArtefactConnector {
 	// Create the modelling bus artefact connector
 	ModellingBusArtefactConnector := TModellingBusArtefactConnector{}
 	ModellingBusArtefactConnector.ModellingBusConnector = ModellingBusConnector
 	ModellingBusArtefactConnector.JSONVersion = JSONVersion
+	ModellingBusArtefactConnector.ArtefactID = ArtefactID
 	ModellingBusArtefactConnector.CurrentContent = []byte{}
 	ModellingBusArtefactConnector.UpdatedContent = []byte{}
 	ModellingBusArtefactConnector.ConsideredContent = []byte{}

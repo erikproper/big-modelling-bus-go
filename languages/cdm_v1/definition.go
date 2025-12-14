@@ -245,8 +245,8 @@ func CreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, model
 	CDMPosterModel := CreateCDMModel(reporter)
 
 	// Setting up the ModelPoster
-	CDMPosterModel.ModelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
-	CDMPosterModel.ModelPoster.PrepareForPosting(modelID)
+	CDMPosterModel.ModelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, modelID)
+	//	CDMPosterModel.ModelPoster.PrepareForPosting(modelID)
 
 	// Return the created model poster
 	return CDMPosterModel
@@ -341,11 +341,13 @@ func (p *tCDMModelPoster) PostConsidering(m tCDMModel) {
 	p.modelPoster.PostJSONArtefactConsidering(json.Marshal(m))
 }
 
+// Creating a CDM model poster, which uses a given ModellingBusConnector to post the model
 func NNCreateCDMPoster(ModellingBusConnector connect.TModellingBusConnector, modelID string) tCDMModelPoster {
-	// Setting up the ModelPoster
+	// Setting up new CDM model poster
+	CDMPosterModel := tCDMModelPoster{}
 	CDMPosterModel.modelPoster = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion)
 	CDMPosterModel.modelPoster.PrepareForPosting(modelID)
 
-	// Return the created model poster
+	// Return the created CDM model poster
 	return CDMPosterModel
 }
