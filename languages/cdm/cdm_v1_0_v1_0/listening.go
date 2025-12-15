@@ -9,7 +9,7 @@ import (
 
 type (
 	TCDMModelListener struct {
-		modelListener connect.TModellingBusArtefactConnector
+		ModelListener connect.TModellingBusArtefactConnector
 
 		CurrentModel    TCDMModel
 		UpdatedModel    TCDMModel
@@ -20,7 +20,7 @@ type (
 func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModelListener {
 	// Setting up a new CDM model listener
 	cdmModelListener := TCDMModelListener{}
-	cdmModelListener.modelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, "")
+	cdmModelListener.ModelListener = connect.CreateModellingBusArtefactConnector(ModellingBusConnector, ModelJSONVersion, "")
 	cdmModelListener.CurrentModel = CreateCDMModel(reporter)
 	cdmModelListener.UpdatedModel = CreateCDMModel(reporter)
 	cdmModelListener.ConsideredModel = CreateCDMModel(reporter)
