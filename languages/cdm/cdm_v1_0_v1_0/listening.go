@@ -17,6 +17,12 @@ type (
 	}
 )
 
+func (l *TCDMModelListener) UpdateModelsFromBus() {
+	l.CurrentModel.GetStateFromBus(l.ModelListener)
+	l.UpdatedModel.GetUpdatedFromBus(l.ModelListener)
+	l.ConsideredModel.GetConsideredFromBus(ModelListener)
+}
+
 func (l *TCDMModelListener) UniteIDSets(mp func(TCDMModel) map[string]bool) map[string]bool {
 	result := map[string]bool{}
 
