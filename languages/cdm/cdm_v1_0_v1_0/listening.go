@@ -41,12 +41,45 @@ func (l *TCDMModelListener) UniteIDSets(mp func(TCDMModel) map[string]bool) map[
 	return result
 }
 
+/*
+ *  Aggregate data across the model versions
+ */
+
 func (l *TCDMModelListener) QualityTypes() map[string]bool {
 	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
 		return m.QualityTypes
 	})
 }
 
+func (l *TCDMModelLListener) ConcreteIndividualTypes() map[string]bool {
+	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
+		return m.ConcreteIndividualTypes
+	})
+}
+
+func (l *TCDMModelListener) RelationTypes() map[string]bool {
+	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
+		return m.RelationTypes
+	})
+}
+
+func (l *TCDMModelListener) InvolvementTypesOfRelationType(relationType string) map[string]bool {
+	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
+		return m.InvolvementTypesOfRelationType[relationType]
+	})
+}
+
+func (l *TCDMModelListener) AlternativeReadingsOfRelationType(relationType string) map[string]bool {
+	return l.UniteIDSets(func(m TCDMModel) map[string]bool {
+		return m.AlternativeReadingsOfRelationType[relationType]
+	})
+}
+
+/*
+ *  Creating and updating the model listener
+ */
+
+// Creating a CDM model listener, which uses a given ModellingBusConnector to listen for models and their updates
 func CreateCDMListener(ModellingBusConnector connect.TModellingBusConnector, reporter *generics.TReporter) TCDMModelListener {
 	// Setting up a new CDM model listener
 	cdmModelListener := TCDMModelListener{}
