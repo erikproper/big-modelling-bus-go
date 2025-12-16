@@ -51,7 +51,7 @@ func (l *TCDMModelListener) UpdateModelsFromBus() {
 
 // Listening for model state postings on the modelling bus
 func (l *TCDMModelListener) ListenForModelStatePostings(agentID, modelID string, handler func()) {
-	l.Reporter.Progress(generics.ProgressLevelBasic, "Listening for model state postings for model %s from agent %s", modelID, agentID)
+	l.ModelListener.Reporter.Progress(generics.ProgressLevelBasic, "Listening for model state postings for model %s from agent %s", modelID, agentID)
 	l.ModelListener.ListenForJSONArtefactStatePostings(agentID, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
