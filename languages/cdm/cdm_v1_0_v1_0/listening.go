@@ -18,8 +18,6 @@
 package cdm_v1_0_v1_0
 
 import (
-	"fmt"
-
 	"github.com/erikproper/big-modelling-bus.go.v1/connect"
 	"github.com/erikproper/big-modelling-bus.go.v1/generics"
 )
@@ -53,7 +51,7 @@ func (l *TCDMModelListener) UpdateModelsFromBus() {
 
 // Listening for model state postings on the modelling bus
 func (l *TCDMModelListener) ListenForModelStatePostings(agentID, modelID string, handler func()) {
-	fmt.Println("Listening for model state postings for model %s from agent %s", modelID, agentID)
+	l.ModelListener.ModellingBusConnector.Reporter("Listening for model state postings for model %s from agent %s", modelID, agentID)
 	l.ModelListener.ListenForJSONArtefactStatePostings(agentID, modelID, func() {
 		l.UpdateModelsFromBus()
 		handler()
