@@ -69,6 +69,20 @@ func (r *TReporter) MaybeReportError(message string, err error) bool {
 	return false
 }
 
+func (r *TReporter) MaybeReportEmptyFlagError(flagValue *string, message string) bool {
+	// Checking the flag value
+	if len(*flagValue) == 0 {
+		// Reporting the error if needed
+		r.Error(message)
+
+		// Indicating that an error was reported
+		return true
+	}
+
+	// Indicating that no error was reported
+	return false
+}
+
 // Panicking with an error message
 func (r *TReporter) Panic(message string, context ...any) {
 	r.Error(message+" Panicking.", context...)

@@ -1,15 +1,13 @@
-[ ] Clean CDM listener and poster
+[ ] Clean & document CDM poster
 
-[ ] Document
+[ ] Clean & document mbus_post
 
 [ ] Command lines:
-mbus 
-  -config <xxx>.ini
-  ---
-  -topic <t>
-  -post_observation     [<json>]
-  -post_coordination    [<json>]
+  -delete_experiment <e>
+  -delete
+  other deletes 
 
+[ ] Command line ... get/listen 
   -get_raw_artefact     <local_file>
   -get_json_artefact    [<file_name>]
 
@@ -18,13 +16,10 @@ mbus
   -listen_json_artefact [<file_name>] [-repeat]
   -listen_observation   [<file_name>] [-repeat]
   -listen_coordination  [<file_name>] [-repeat]
-  -delete
-  ---
-  -delete_experiment <e>
 
 [ ] bus_listener in GO instead of mosquitto
 
-[ ] Clean code
+[ ] Code review
 
 [ ] README
 
@@ -47,6 +42,7 @@ At most once (QoS 0): QoS 0 offers "fire and forget" messaging with no acknowled
 At least once (QoS 1): QoS 1 ensures that messages are delivered at least once by requiring a PUBACK acknowledgment.
 Exactly once (QoS 2): QoS 2 guarantees that each message is delivered exactly once by using a four-step handshake (PUBLISH, PUBREC, PUBREL, PUBCOMP).
 
+[ ] PlantUML2Bus / UML2CDM 
 
 [ ] Coordination
 - do/listen
@@ -57,12 +53,7 @@ Exactly once (QoS 2): QoS 2 guarantees that each message is delivered exactly on
 - json_outputs (sequence) of version + path (s/u/c??)
 Replies with '{ "acknowledgement", "true" }'
 
-
-[ ] Commandline calls:
-    - files post/listen
-    - json  post/listen
-
-[ ]  Clean error messages. Especially "err" messages
+Also the PDF renderer .... "-coordinated" mode
 
 [ ] Keep alive at MQTT level. Laptop seems to drop the connection. 
     => https://stackoverflow.com/questions/43759445/how-i-can-check-if-i-lose-connection-with-mqtt-broker 
