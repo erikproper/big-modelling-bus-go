@@ -61,7 +61,7 @@ func (r *TReporter) ReportError(message string, err error) {
 // Reporting an error if the error value is not nil
 func (r *TReporter) MaybeReportError(message string, err error) bool {
 	if err != nil {
-		r.Error(message, err)
+		r.ReportError(message, err)
 
 		return true
 	}
