@@ -46,8 +46,8 @@ func JSONApplyPatch(sourceJSON, patchJSON []byte) (json.RawMessage, error) {
 }
 
 // IsJSON checks whether a string is a valid JSON.
-func IsJSON(str string) bool {
+func IsJSON(message []byte) bool {
 	js := json.RawMessage{}
 
-	return json.Unmarshal([]byte(str), &js) == nil
+	return json.Unmarshal(message, &js) == nil
 }
