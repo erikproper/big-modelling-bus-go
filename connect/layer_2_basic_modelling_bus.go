@@ -74,6 +74,8 @@ func (b *TModellingBusConnector) postJSONAsFile(topicPath string, jsonMessage []
 	// First, add the JSON as a file to the repository
 	event := b.modellingBusRepositoryConnector.addJSONAsFile(topicPath, jsonMessage, timestamp)
 
+	b.Reporter.Progress(1, "JJJJ")
+
 	// Then convert the event to JSON
 	message, err := json.Marshal(event)
 
