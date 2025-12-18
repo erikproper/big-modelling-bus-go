@@ -40,13 +40,13 @@ const (
 type (
 	TModellingBusArtefactConnector struct {
 		ModellingBusConnector TModellingBusConnector // The modelling bus connector to be used
-		JSONVersion           string                 `json:"json version"`      // The JSON version to be used
-		ArtefactID            string                 `json:"artefact id"`       // The artefact ID
-		CurrentTimestamp      string                 `json:"current timestamp"` // The current timestamp
+		JSONVersion           string                 `json:"json version, omitempty"`      // The JSON version to be used
+		ArtefactID            string                 `json:"artefact id"`                  // The artefact ID
+		CurrentTimestamp      string                 `json:"current timestamp, omitempty"` // The current timestamp
 
-		CurrentContent    json.RawMessage `json:"content"` // The current content of the artefact
-		UpdatedContent    json.RawMessage `json:"-"`       // The updated content of the artefact
-		ConsideredContent json.RawMessage `json:"-"`       // The considered content of the artefact
+		CurrentContent    json.RawMessage `json:"content, omitempty"` // The current content of the artefact
+		UpdatedContent    json.RawMessage `json:"-"`                  // The updated content of the artefact
+		ConsideredContent json.RawMessage `json:"-"`                  // The considered content of the artefact
 
 		// Before we can communicate updates or considering postings, we must have
 		// communicated the state of the model first
