@@ -343,7 +343,9 @@ func (b *TModellingBusArtefactConnector) DeleteRawArtefact(artefactID string) {
 // Deleting JSON artefact
 func (b *TModellingBusArtefactConnector) DeleteJSONArtefact(artefactID string) {
 	// Delete the JSON artefact
-	b.ModellingBusConnector.deletePosting(b.jsonArtefactsTopicPath(artefactID))
+	b.ModellingBusConnector.deletePosting(b.jsonArtefactsStateTopicPath(artefactID))
+	b.ModellingBusConnector.deletePosting(b.jsonArtefactsUpdateTopicPath(artefactID))
+	b.ModellingBusConnector.deletePosting(b.jsonArtefactsConsideringTopicPath(artefactID))
 }
 
 /*
