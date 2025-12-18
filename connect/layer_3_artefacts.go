@@ -195,7 +195,7 @@ func (b *TModellingBusArtefactConnector) updateConsideringJSONArtefact(json []by
  */
 
 // Posting raw artefact state
-func (b *TModellingBusArtefactConnector) PostRawArtefactState(topicPath, localFilePath string) {
+func (b *TModellingBusArtefactConnector) PostRawArtefactState(localFilePath string) {
 	// Post the raw artefact state
 	b.ModellingBusConnector.postFile(b.rawArtefactsTopicPath(b.ArtefactID), localFilePath, generics.GetTimestamp())
 }
