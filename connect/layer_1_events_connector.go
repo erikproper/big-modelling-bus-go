@@ -190,6 +190,7 @@ func (e *tModellingBusEventsConnector) connectToMQTT(postingOnly bool) {
 		e.reporter.Progress(generics.ProgressLevelBasic, "Connected to the MQTT broker.")
 
 		if !postingOnly {
+			e.reporter.Progress(generics.ProgressLevelBasic, "NOT posting only, so collecting existing topics and messages from the MQTT bus.")
 			// Unless we will be postingOnly, continuously connect all used topics underneath the
 			// topic root, and their messages.
 			// We need this information to enable deletion of topics, as well as to be able to
@@ -242,6 +243,8 @@ func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath strin
 	// Getting the message
 	message := e.currentMessages[mqttTopicPath]
 
+	e.reporter.Progress(generics.ProgressLevelDetailed, "XXXX Pro-actively retrieved message from topic path '%s': %s", mqttTopicPath, string(message))
+
 	// When messageFromEvent is called too soon after opening the connection to the MQTT broker,
 	// we may not have received a message yet. So, we need to be "waitForMQTT" patient.
 	if len(message) == 0 {
@@ -249,7 +252,7 @@ func (e *tModellingBusEventsConnector) messageFromEvent(agentID, topicPath strin
 		message = e.currentMessages[mqttTopicPath]
 	}
 
-	e.reporter.Progress(generics.ProgressLevelDetailed, "Pro-actively retrieved message from topic path '%s': %s", mqttTopicPath, string(message))
+	e.reporter.Progress(generics.ProgressLevelDetailed, "XXXX Pro-actively retrieved message from topic path '%s': %s", mqttTopicPath, string(message))
 
 	return message
 }
