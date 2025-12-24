@@ -163,6 +163,14 @@ func (b *TModellingBusArtefactConnector) updateCurrentJSONArtefact(json []byte, 
 
 // Updating the updated JSON artefact state
 func (b *TModellingBusArtefactConnector) updateUpdatedJSONArtefact(json []byte, _ ...string) bool {
+	// If the json is empty, then the updated state, and considered state, are the same as the current state
+	if len(json) == 0 {
+		b.UpdatedContent = b.CurrentContent
+		b.ConsideredContent = b.CurrentContent
+
+		return true
+	}
+
 	// Apply the delta to the current content
 	ok := false
 	b.UpdatedContent, ok = b.applyJSONDelta(b.CurrentContent, json)
@@ -176,6 +184,13 @@ func (b *TModellingBusArtefactConnector) updateUpdatedJSONArtefact(json []byte, 
 
 // Updating the considered JSON artefact state
 func (b *TModellingBusArtefactConnector) updateConsideringJSONArtefact(json []byte, _ ...string) bool {
+	// If the json is empty, then the considered state is the same as the updated state
+	if len(json) == 0 {
+		b.ConsideredContent = b.UpdatedContent
+
+		return true
+	}
+
 	// Apply the delta to the updated content
 	ok := false
 	b.ConsideredContent, ok = b.applyJSONDelta(b.UpdatedContent, json)

@@ -112,6 +112,11 @@ func (b *TModellingBusConnector) postJSONAsStreamed(topicPath string, jsonMessag
 
 // Get a linked file from the repository, given the message from the modelling bus
 func (b *TModellingBusConnector) getLinkedFileFromRepository(message []byte, localFileName string) (string, string) {
+	// If no message is given, return empty values
+	if len(message) == 0 {
+		return "", ""
+	}
+
 	// Unmarshal the message to get the repository event
 	event := tRepositoryEvent{}
 	err := json.Unmarshal(message, &event)
@@ -156,7 +161,7 @@ func (b *TModellingBusConnector) getJSON(agentID, topicPath string) ([]byte, str
 	jsonPayload, err := os.ReadFile(tempFilePath)
 	os.Remove(tempFilePath)
 
-	// Handle potential errors
+	// Handle potential errors silently
 	if err != nil {
 		return []byte{}, ""
 	}
