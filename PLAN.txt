@@ -1,19 +1,8 @@
-[ ] Command line ... get
-
-[ ] listen 
-  -get_raw_artefact     <local_file>
-  -get_json_artefact    [<file_name>]
-
-  The -repeat Requires a link to a command that accepts file/input
-  -listen_raw_artefact  <file> 
-  -listen_json_artefact [<file_name>] [-repeat]
-  -listen_observation   [<file_name>] [-repeat]
-  -listen_coordination  [<file_name>] [-repeat]
-
-[ ] bus_listener in GO instead of mosquitto
-
-[ ] Check cmd ones for optimal flag checking
-
+Commandlines:
+[ ] get
+[ ] wait ==> waits for an update, insteqd of getting the current version, and then exit immediately
+[ ] listen ==> Requires handler gets timestamp as input
+[ ] bus_monitor via in GO instead of mosquitto
 
 [ ] Code review
 

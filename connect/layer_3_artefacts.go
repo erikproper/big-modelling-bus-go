@@ -42,7 +42,9 @@ type (
 		ModellingBusConnector TModellingBusConnector // The modelling bus connector to be used
 		JSONVersion           string                 `json:"json version, omitempty"`      // The JSON version to be used
 		ArtefactID            string                 `json:"artefact id"`                  // The artefact ID
-		CurrentTimestamp      string                 `json:"current timestamp, omitempty"` // The current timestamp
+		CurrentTimestamp      string                 `json:"current timestamp, omitempty"` // The current versions' timestamp
+		UpdatedTimestamp      string                 `json:"-"`                            // The updated version's timestamp
+		ConsideredTimestamp   string                 `json:"-"`                            // The considered version's timestamp
 
 		CurrentContent    json.RawMessage `json:"content, omitempty"` // The current content of the artefact
 		UpdatedContent    json.RawMessage `json:"-"`                  // The updated content of the artefact
@@ -50,7 +52,7 @@ type (
 
 		// Before we can communicate updates or considering postings, we must have
 		// communicated the state of the model first
-		stateCommunicated bool `json:"-"` // Identenfies whether the state has been communicated
+		stateCommunicated bool `json:"-"` // Identifies whether the state has been communicated
 	}
 )
 
@@ -124,20 +126,20 @@ func (b *TModellingBusArtefactConnector) postJSONDelta(deltaTopicPath string, ol
 }
 
 // Applying a JSON delta to a given current JSON state
-func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.RawMessage, deltaJSON []byte) (json.RawMessage, bool) {
+func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.RawMessage, deltaJSON []byte) (json.RawMessage, string, bool) {
 	// Unmarshal the delta
 	delta := TJSONDelta{}
 	err := json.Unmarshal(deltaJSON, &delta)
 
 	// Handle potential errors
 	if b.ModellingBusConnector.Reporter.MaybeReportError("Something went wrong unJSONing the received diff patch:", err) {
-		return currentJSONState, false
+		return currentJSONState, b.CurrentTimestamp, false
 	}
 
 	// Check whether the delta can be applied
 	if delta.CurrentTimestamp != b.CurrentTimestamp {
 		// When the timestamps don't match, we cannot apply the delta
-		return currentJSONState, false
+		return currentJSONState, b.CurrentTimestamp, false
 	}
 
 	// Apply the delta
@@ -145,11 +147,11 @@ func (b *TModellingBusArtefactConnector) applyJSONDelta(currentJSONState json.Ra
 
 	// Handle potential errors
 	if b.ModellingBusConnector.Reporter.MaybeReportError("Applying the diff patch did not work:", err) {
-		return currentJSONState, false
+		return currentJSONState, b.CurrentTimestamp, false
 	}
 
 	// Return the new state
-	return newJSONState, true
+	return newJSONState, delta.Timestamp, true
 }
 
 // Updating the current JSON artefact state
@@ -158,24 +160,31 @@ func (b *TModellingBusArtefactConnector) updateCurrentJSONArtefact(json []byte, 
 	b.CurrentContent = json
 	b.UpdatedContent = json
 	b.ConsideredContent = json
+
 	b.CurrentTimestamp = currentTimestamp
+	b.UpdatedTimestamp = currentTimestamp
+	b.ConsideredTimestamp = currentTimestamp
 }
 
 // Updating the updated JSON artefact state
-func (b *TModellingBusArtefactConnector) updateUpdatedJSONArtefact(json []byte, _ ...string) bool {
+func (b *TModellingBusArtefactConnector) updateUpdatedJSONArtefact(json []byte, _ string) bool {
 	// If the json is empty, then the updated state, and considered state, are the same as the current state
 	if len(json) == 0 {
 		b.UpdatedContent = b.CurrentContent
 		b.ConsideredContent = b.CurrentContent
+
+		b.UpdatedTimestamp = b.CurrentTimestamp
+		b.ConsideredTimestamp = b.CurrentTimestamp
 
 		return true
 	}
 
 	// Apply the delta to the current content
 	ok := false
-	b.UpdatedContent, ok = b.applyJSONDelta(b.CurrentContent, json)
+	b.UpdatedContent, b.UpdatedTimestamp, ok = b.applyJSONDelta(b.CurrentContent, json)
 	if ok {
 		b.ConsideredContent = b.UpdatedContent
+		b.ConsideredTimestamp = b.UpdatedTimestamp
 	}
 
 	// Return whether the update was successful
@@ -183,17 +192,18 @@ func (b *TModellingBusArtefactConnector) updateUpdatedJSONArtefact(json []byte, 
 }
 
 // Updating the considered JSON artefact state
-func (b *TModellingBusArtefactConnector) updateConsideringJSONArtefact(json []byte, _ ...string) bool {
+func (b *TModellingBusArtefactConnector) updateConsideringJSONArtefact(json []byte, _ string) bool {
 	// If the json is empty, then the considered state is the same as the updated state
 	if len(json) == 0 {
 		b.ConsideredContent = b.UpdatedContent
+		b.ConsideredTimestamp = b.UpdatedTimestamp
 
 		return true
 	}
 
 	// Apply the delta to the updated content
 	ok := false
-	b.ConsideredContent, ok = b.applyJSONDelta(b.UpdatedContent, json)
+	b.ConsideredContent, b.ConsideredTimestamp, ok = b.applyJSONDelta(b.UpdatedContent, json)
 
 	// Return whether the update was successful
 	return ok
@@ -294,8 +304,8 @@ func (b *TModellingBusArtefactConnector) ListenForJSONArtefactStatePostings(agen
 // Listening for JSON artefact update postings
 func (b *TModellingBusArtefactConnector) ListenForJSONArtefactUpdatePostings(agentID, artefactID string, handler func()) {
 	// Listen for JSON artefact update postings
-	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.jsonArtefactsUpdateTopicPath(artefactID), func(json []byte, _ string) {
-		if b.updateUpdatedJSONArtefact(json) {
+	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.jsonArtefactsUpdateTopicPath(artefactID), func(json []byte, timestamp string) {
+		if b.updateUpdatedJSONArtefact(json, timestamp) {
 			handler()
 		}
 	})
@@ -304,8 +314,8 @@ func (b *TModellingBusArtefactConnector) ListenForJSONArtefactUpdatePostings(age
 // Listening for JSON considered artefact postings
 func (b *TModellingBusArtefactConnector) ListenForJSONArtefactConsideringPostings(agentID, artefactID string, handler func()) {
 	// Listen for JSON considered artefact postings
-	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.jsonArtefactsConsideringTopicPath(artefactID), func(json []byte, _ string) {
-		if b.updateConsideringJSONArtefact(json) {
+	b.ModellingBusConnector.listenForJSONFilePostings(agentID, b.jsonArtefactsConsideringTopicPath(artefactID), func(json []byte, timestamp string) {
+		if b.updateConsideringJSONArtefact(json, timestamp) {
 			handler()
 		}
 	})
@@ -316,12 +326,9 @@ func (b *TModellingBusArtefactConnector) ListenForJSONArtefactConsideringPosting
  */
 
 // Getting raw artefact state
-func (b *TModellingBusArtefactConnector) GetRawArtefact(agentID, artefactID, localFileName string) string {
+func (b *TModellingBusArtefactConnector) GetRawArtefact(agentID, artefactID, localFileName string) (string, string) {
 	// Get the raw artefact state
-	filePath, _ := b.ModellingBusConnector.getFileFromPosting(agentID, b.rawArtefactsTopicPath(artefactID), localFileName)
-
-	// Return the file path
-	return filePath
+	return b.ModellingBusConnector.getFileFromPosting(agentID, b.rawArtefactsTopicPath(artefactID), localFileName)
 }
 
 // Getting JSON artefact state
@@ -381,6 +388,8 @@ func CreateModellingBusArtefactConnector(ModellingBusConnector TModellingBusConn
 	ModellingBusArtefactConnector.UpdatedContent = []byte{}
 	ModellingBusArtefactConnector.ConsideredContent = []byte{}
 	ModellingBusArtefactConnector.CurrentTimestamp = generics.GetTimestamp()
+	ModellingBusArtefactConnector.UpdatedTimestamp = ModellingBusArtefactConnector.CurrentTimestamp
+	ModellingBusArtefactConnector.ConsideredTimestamp = ModellingBusArtefactConnector.CurrentTimestamp
 	ModellingBusArtefactConnector.stateCommunicated = false
 
 	// Return the created modelling bus artefact connector
